@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#E8845A">
+  <meta name="description" content="大切な命を、次へつなぐ。ペットのもしもに備えるアプリ">
+  <title>Tasuki タスキ - 大切な命を、次へつなぐ。</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #E8845A;
+      --primary-light: #F5A07A;
+      --primary-dark: #C86A40;
+      --accent: #F5E6D3;
+      --text: #3D2B1F;
+      --text-light: #8B6F5E;
+      --white: #FFFFFF;
+      --bg: #FDF8F4;
+      --card: #FFFFFF;
+      --border: #EDD9C8;
+      --danger: #E53E3E;
+      --success: #38A169;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      background: var(--white);
+      padding: 16px 20px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-center { flex: 1; text-align: center; }
+    .logo-text { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: var(--primary); }
+    .logo-text span { font-family: 'Noto Sans JP', sans-serif; font-size: 12px; color: var(--text-light); margin-left: 4px; }
+    .tagline { font-size: 11px; color: var(--text-light); }
+
+    .logout-btn {
+      font-size: 11px;
+      color: var(--text-light);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    /* Auth Screen */
+    .auth-screen {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      background: linear-gradient(160deg, #FDF8F4 0%, #F5E6D3 100%);
+    }
+
+    .auth-logo { font-size: 60px; margin-bottom: 16px; }
+    .auth-title { font-family: 'Poppins', sans-serif; font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .auth-tagline { font-size: 13px; color: var(--text-light); margin-bottom: 40px; }
+
+    .auth-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(61,43,31,0.1);
+      border: 1px solid var(--border);
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: var(--accent);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 24px;
+      gap: 4px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: 'Noto Sans JP', sans-serif;
+      color: var(--text-light);
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active { background: var(--white); color: var(--primary); }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; display: block; }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--white);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus { border-color: var(--primary); }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      width: 100%;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Noto Sans JP', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 12px;
+      width: 100%;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Noto Sans JP', sans-serif;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .auth-msg { font-size: 13px; text-align: center; margin-top: 12px; padding: 10px; border-radius: 8px; }
+    .auth-msg.error { background: #FFF5F5; color: var(--danger); }
+    .auth-msg.success { background: #F0FFF4; color: var(--success); }
+
+    /* App */
+    .app-screen { display: none; }
+    .app-screen.active { display: block; }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 100;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 4px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-light);
+      font-size: 10px;
+      font-family: 'Noto Sans JP', sans-serif;
+      transition: color 0.2s;
+    }
+
+    .nav-item.active { color: var(--primary); }
+    .nav-item .nav-icon { font-size: 20px; margin-bottom: 2px; }
+
+    .page { display: none; padding: 16px; }
+    .page.active { display: block; }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+
+    .sos-btn {
+      background: linear-gradient(135deg, #E53E3E, #C53030);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      padding: 18px;
+      width: 100%;
+      font-size: 18px;
+      font-weight: 700;
+      font-family: 'Noto Sans JP', sans-serif;
+      cursor: pointer;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(229,62,62,0.3);
+    }
+
+    .alert-banner {
+      background: #FFF5F5;
+      border: 1px solid #FED7D7;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: var(--danger);
+    }
+
+    .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+    .quick-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-item:active { background: var(--accent); }
+    .quick-item .icon { font-size: 24px; margin-bottom: 6px; }
+    .quick-item .label { font-size: 12px; font-weight: 700; }
+    .quick-item .sub { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+
+    .situation-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .situation-card:active { background: var(--accent); }
+    .sit-icon { font-size: 28px; }
+    .sit-text { font-size: 15px; font-weight: 500; }
+
+    .solution-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+    .solution-num { background: var(--primary); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+
+    .org-item { background: var(--white); border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; font-size: 12px; }
+    .org-name { font-weight: 700; }
+    .org-link { color: var(--primary); text-decoration: none; font-size: 11px; }
+
+    .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .action-btn { background: var(--white); border: 1px solid var(--primary); color: var(--primary); border-radius: 10px; padding: 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
+
+    .form-select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; font-family: 'Noto Sans JP', sans-serif; background: var(--white); color: var(--text); outline: none; }
+
+    textarea.form-input { min-height: 80px; resize: vertical; }
+
+    .icon-selector { display: flex; gap: 8px; }
+    .icon-opt { flex: 1; padding: 10px 6px; border: 2px solid var(--border); border-radius: 10px; text-align: center; cursor: pointer; font-size: 11px; transition: all 0.2s; }
+    .icon-opt .opt-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+    .icon-opt.selected { border-color: var(--primary); background: var(--accent); }
+
+    .timeline-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+    .timeline-date { font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
+    .health-icons { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+    .health-badge { font-size: 11px; padding: 3px 8px; border-radius: 20px; background: var(--accent); }
+    .weight-display { font-size: 20px; font-weight: 700; color: var(--primary); }
+    .weight-change { font-size: 12px; padding: 2px 8px; border-radius: 20px; }
+    .weight-change.up { background: #FFF5F5; color: var(--danger); }
+    .weight-change.down { background: #F0FFF4; color: var(--success); }
+
+    .chart-container { position: relative; height: 200px; margin: 12px 0; }
+    .chart-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .chart-tab { padding: 6px 14px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border); cursor: pointer; background: var(--white); font-family: 'Noto Sans JP', sans-serif; }
+    .chart-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .vaccine-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--accent); border-radius: 10px; margin-bottom: 8px; }
+    .vaccine-name { font-size: 13px; font-weight: 700; }
+    .vaccine-date { font-size: 11px; color: var(--text-light); }
+    .vaccine-alert { background: #FFF5F5; border: 1px solid #FED7D7; border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--danger); font-weight: 700; }
+    .vaccine-ok { background: #F0FFF4; border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--success); }
+
+    .pet-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 12px; border: 3px solid var(--primary); overflow: hidden; }
+    .pet-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .note-section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+    .note-section-title { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+
+    .support-category { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .cat-btn { padding: 6px 14px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border); cursor: pointer; background: var(--white); font-family: 'Noto Sans JP', sans-serif; }
+    .cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .support-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+    .support-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .support-area { font-size: 11px; color: var(--text-light); margin-bottom: 8px; }
+    .link-btn { padding: 6px 12px; border-radius: 8px; font-size: 12px; border: 1px solid var(--primary); color: var(--primary); background: var(--white); cursor: pointer; text-decoration: none; display: inline-block; }
+
+    .sim-result { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 12px; }
+    .sim-amount { font-size: 32px; font-weight: 700; font-family: 'Poppins', sans-serif; }
+    .sim-label { font-size: 12px; opacity: 0.9; margin-bottom: 4px; }
+    .sim-breakdown { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+    .sim-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .sim-row:last-child { border-bottom: none; }
+
+    .check-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; cursor: pointer; }
+    .check-box { width: 22px; height: 22px; border: 2px solid var(--border); border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .check-box.checked { background: var(--primary); border-color: var(--primary); color: white; font-size: 14px; font-weight: 700; }
+    .check-text { font-size: 13px; font-weight: 700; }
+    .check-sub { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+    .progress-bar { background: var(--border); border-radius: 20px; height: 8px; margin: 10px 0; overflow: hidden; }
+    .progress-fill { background: var(--primary); height: 100%; border-radius: 20px; transition: width 0.5s; }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: var(--white); border-radius: 24px 24px 0 0; padding: 24px 20px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+    .modal-close { position: absolute; top: 16px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text-light); background: none; border: none; }
+
+    .page-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+    .page-subtitle { font-size: 13px; color: var(--text-light); margin-bottom: 16px; }
+
+    .plan-badge { background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 700; margin-left: 6px; }
+
+    .sub-tabs { display: flex; background: var(--accent); border-radius: 12px; padding: 4px; margin-bottom: 16px; gap: 4px; }
+    .sub-tab { flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 700; text-align: center; cursor: pointer; border: none; background: none; font-family: 'Noto Sans JP', sans-serif; color: var(--text-light); }
+    .sub-tab.active { background: var(--white); color: var(--primary); }
+
+    .sub-page { display: none; }
+    .sub-page.active { display: block; }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    .photo-upload { border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; color: var(--text-light); font-size: 13px; }
+    .photo-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .photo-thumb { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; }
+
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .add-btn { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
+
+    .loading { text-align: center; padding: 20px; color: var(--text-light); font-size: 14px; }
+
+    .user-plan-badge { font-size: 11px; padding: 2px 10px; border-radius: 20px; font-weight: 700; }
+    .plan-free { background: var(--accent); color: var(--text-light); }
+    .plan-standard { background: #EBF8FF; color: #2B6CB0; }
+    .plan-premium { background: #FAF5FF; color: #6B46C1; }
+  </style>
+</head>
+<body>
+
+<!-- Auth Screen -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-logo">🐾</div>
+  <div class="auth-title">Tasuki タスキ</div>
+  <div class="auth-tagline">大切な命を、次へつなぐ。</div>
+
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">ログイン</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">新規登録</button>
+    </div>
+
+    <div id="login-form">
+      <div class="form-group">
+        <label class="form-label">メールアドレス</label>
+        <input type="email" class="form-input" id="login-email" placeholder="example@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">パスワード</label>
+        <input type="password" class="form-input" id="login-password" placeholder="パスワード">
+      </div>
+      <button class="btn-primary" id="login-btn" onclick="handleLogin()">🐾 ログイン</button>
+    </div>
+
+    <div id="signup-form" style="display:none">
+      <div class="form-group">
+        <label class="form-label">メールアドレス</label>
+        <input type="email" class="form-input" id="signup-email" placeholder="example@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">パスワード（6文字以上）</label>
+        <input type="password" class="form-input" id="signup-password" placeholder="パスワード">
+      </div>
+      <button class="btn-primary" id="signup-btn" onclick="handleSignup()">🐾 アカウントを作成する</button>
+    </div>
+
+    <div id="auth-message"></div>
+  </div>
+</div>
+
+<!-- App Screen -->
+<div id="app-screen" class="app-screen">
+
+  <!-- Header -->
+  <div class="header">
+    <div style="width:60px"></div>
+    <div class="header-center">
+      <div class="logo-text">Tasuki <span>タスキ</span></div>
+      <div class="tagline">大切な命を、次へつなぐ。</div>
+    </div>
+    <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
+  </div>
+
+  <!-- Pages -->
+  <div class="page active" id="page-home">
+    <div id="alert-area"></div>
+    <button class="sos-btn" onclick="switchPage('sos')">⚠️ SOS 緊急相談</button>
+    <div class="card" id="pet-summary">
+      <div class="card-title">ペットの情報</div>
+      <div id="pet-summary-content">
+        <div style="text-align:center;padding:12px;color:var(--text-light);font-size:13px;cursor:pointer" onclick="switchPage('pet')">
+          ペット情報を登録しましょう →
+        </div>
+      </div>
+    </div>
+    <div class="quick-grid">
+      <div class="quick-item" onclick="switchPage('health')"><div class="icon">❤️</div><div class="label">健康記録をつける</div><div class="sub">日々の体調管理</div></div>
+      <div class="quick-item" onclick="switchPage('note')"><div class="icon">📖</div><div class="label">タスキノートを書く</div><div class="sub">大切な想いを残す</div></div>
+      <div class="quick-item" onclick="switchPage('pet')"><div class="icon">🐶</div><div class="label">ペット情報を編集</div><div class="sub">プロフィール管理</div></div>
+      <div class="quick-item" onclick="switchPage('support')"><div class="icon">🔍</div><div class="label">サポートを探す</div><div class="sub">支援情報・シミュレーター</div></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-sos">
+    <div class="page-title">SOS相談</div>
+    <div class="page-subtitle">飼い続けることが不安ですか？まず相談を。</div>
+    <div class="situation-card" onclick="showSolution('moving')"><span class="sit-icon">🏠</span><span class="sit-text">引越し先がペット不可</span></div>
+    <div class="situation-card" onclick="showSolution('money')"><span class="sit-icon">💰</span><span class="sit-text">経済的に苦しくなった</span></div>
+    <div class="situation-card" onclick="showSolution('allergy')"><span class="sit-icon">🤧</span><span class="sit-text">家族がアレルギーになった</span></div>
+    <div class="situation-card" onclick="showSolution('hospital')"><span class="sit-icon">🏥</span><span class="sit-text">入院・介護が必要になった</span></div>
+    <div class="situation-card" onclick="showSolution('baby')"><span class="sit-icon">👶</span><span class="sit-text">出産・育児で手が回らない</span></div>
+    <div class="situation-card" onclick="showSolution('different')"><span class="sit-icon">😔</span><span class="sit-text">思っていた飼育と違った</span></div>
+    <div class="situation-card" onclick="showSolution('other')"><span class="sit-icon">❓</span><span class="sit-text">その他</span></div>
+    <div id="solution-area"></div>
+  </div>
+
+  <div class="page" id="page-pet">
+    <div class="page-title">ペット情報</div>
+    <div class="card">
+      <div class="pet-avatar" id="pet-avatar-display">🐶</div>
+      <div class="form-group">
+        <label class="form-label">📷 写真</label>
+        <div class="photo-upload" onclick="document.getElementById('pet-photo-input').click()">タップして写真を追加<input type="file" id="pet-photo-input" accept="image/*" style="display:none" onchange="setPetPhoto(event)"></div>
+      </div>
+      <div class="form-group"><label class="form-label">名前 *</label><input type="text" class="form-input" id="pet-name" placeholder="例：ポチ"></div>
+      <div class="form-group"><label class="form-label">種類</label><select class="form-select" id="pet-species"><option value="">選択</option><option value="dog">犬</option><option value="cat">猫</option><option value="other">その他</option></select></div>
+      <div class="form-group"><label class="form-label">犬種・猫種</label><input type="text" class="form-input" id="pet-breed" placeholder="例：柴犬"></div>
+      <div class="form-group"><label class="form-label">年齢</label><input type="number" class="form-input" id="pet-age" placeholder="例：3"></div>
+      <div class="form-group"><label class="form-label">性別</label><select class="form-select" id="pet-gender"><option value="">選択</option><option value="male">オス</option><option value="female">メス</option></select></div>
+      <div class="form-group"><label class="form-label">性格・特徴</label><textarea class="form-input" id="pet-personality" placeholder="例：人懐っこい、散歩が大好き"></textarea></div>
+      <div class="form-group"><label class="form-label">好きな食べ物</label><input type="text" class="form-input" id="pet-food" placeholder="例：ささみ"></div>
+      <div class="form-group"><label class="form-label">苦手なもの</label><input type="text" class="form-input" id="pet-fears" placeholder="例：雷"></div>
+      <div class="form-group"><label class="form-label">既往歴・病気</label><textarea class="form-input" id="pet-medical" placeholder="例：アレルギー性皮膚炎"></textarea></div>
+      <div class="form-group"><label class="form-label">現在の薬</label><input type="text" class="form-input" id="pet-meds" placeholder="例：アポキル錠（1日1回）"></div>
+      <div class="form-group"><label class="form-label">マイクロチップ番号</label><input type="text" class="form-input" id="pet-chip" placeholder="15桁の番号"></div>
+      <div class="form-group"><label class="form-label">かかりつけ動物病院</label><input type="text" class="form-input" id="pet-vet" placeholder="例：○○動物病院（03-XXXX-XXXX）"></div>
+      <button class="btn-primary" onclick="savePetProfile()">💾 保存する</button>
+    </div>
+  </div>
+
+  <div class="page" id="page-health">
+    <div class="page-title">健康記録</div>
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchSubTab('health','record',this)">記録</button>
+      <button class="sub-tab" onclick="switchSubTab('health','graph',this)">グラフ</button>
+      <button class="sub-tab" onclick="switchSubTab('health','vaccine',this)">ワクチン</button>
+    </div>
+    <div class="sub-page active" id="health-sub-record">
+      <button class="btn-primary" style="margin-bottom:16px" onclick="openHealthModal()">＋ 今日の記録をつける</button>
+      <div id="health-timeline"><div class="loading">読み込み中...</div></div>
+    </div>
+    <div class="sub-page" id="health-sub-graph">
+      <div class="chart-tabs">
+        <button class="chart-tab active" onclick="switchChartRange(30,this)">30日</button>
+        <button class="chart-tab" onclick="switchChartRange(90,this)">90日</button>
+        <button class="chart-tab" onclick="switchChartRange(365,this)">1年</button>
+      </div>
+      <div class="card"><div class="card-title">体重推移グラフ</div><div class="chart-container"><canvas id="weightChart"></canvas></div></div>
+      <div class="card">
+        <div class="card-title">PDF出力 <span class="plan-badge">PREMIUM</span></div>
+        <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">獣医への診察時に使える健康記録PDFを出力できます</p>
+        <button class="btn-secondary" onclick="alert('プレミアムプラン（月額1,480円）でご利用いただけます')">📄 PDF出力する</button>
+      </div>
+    </div>
+    <div class="sub-page" id="health-sub-vaccine">
+      <div class="section-header"><div class="card-title" style="margin:0">ワクチン・接種記録</div><button class="add-btn" onclick="openVaccineModal()">＋ 追加</button></div>
+      <div id="vaccine-list"><div class="loading">読み込み中...</div></div>
+      <div class="section-header" style="margin-top:20px"><div class="card-title" style="margin:0">投薬管理</div><button class="add-btn" onclick="openMedModal()">＋ 追加</button></div>
+      <div id="med-list"><div class="empty-state" style="padding:20px"><p>投薬記録がありません</p></div></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-note">
+    <div class="page-title">タスキノート</div>
+    <div class="page-subtitle">もしもの時のために、大切な想いを残す</div>
+    <div class="note-section">
+      <div class="note-section-title">🐾 ペットへの想い・お願い</div>
+      <textarea class="form-input" id="note-message" placeholder="次の飼い主さんへのメッセージ..." style="min-height:100px"></textarea>
+    </div>
+    <div class="note-section">
+      <div class="note-section-title">👤 次の飼い主候補</div>
+      <div class="form-group"><label class="form-label">名前</label><input type="text" class="form-input" id="note-next-owner" placeholder="例：田中 花子"></div>
+      <div class="form-group"><label class="form-label">連絡先</label><input type="text" class="form-input" id="note-next-contact" placeholder="例：090-XXXX-XXXX"></div>
+      <div class="form-group"><label class="form-label">続柄・関係</label><input type="text" class="form-input" id="note-next-relation" placeholder="例：妹、友人"></div>
+    </div>
+    <div class="note-section">
+      <div class="note-section-title">📋 日常のケア情報</div>
+      <div class="form-group"><label class="form-label">食事の内容・時間</label><textarea class="form-input" id="note-feeding" placeholder="例：朝7時・夜6時に〇〇フード100gずつ"></textarea></div>
+      <div class="form-group"><label class="form-label">散歩の頻度・コース</label><textarea class="form-input" id="note-walk" placeholder="例：朝晩30分、近くの公園へ"></textarea></div>
+      <div class="form-group"><label class="form-label">注意事項</label><textarea class="form-input" id="note-caution" placeholder="例：チョコレートNG"></textarea></div>
+    </div>
+    <div class="note-section">
+      <div class="note-section-title">💰 月々の費用目安</div>
+      <div class="form-group"><label class="form-label">フード代（月）</label><input type="number" class="form-input" id="note-cost-food" placeholder="例：8000"></div>
+      <div class="form-group"><label class="form-label">医療費（月平均）</label><input type="number" class="form-input" id="note-cost-medical" placeholder="例：5000"></div>
+      <div class="form-group"><label class="form-label">その他</label><input type="number" class="form-input" id="note-cost-other" placeholder="例：5000"></div>
+    </div>
+    <button class="btn-primary" onclick="saveNote()">💾 タスキノートを保存する</button>
+    <button class="btn-secondary" onclick="shareNote()">🔗 信頼できる人に共有する</button>
+  </div>
+
+  <div class="page" id="page-support">
+    <div class="page-title">サポート情報</div>
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchSubTab('support','info',this)">支援情報</button>
+      <button class="sub-tab" onclick="switchSubTab('support','sim',this)">費用試算</button>
+      <button class="sub-tab" onclick="switchSubTab('support','check',this)">準備確認</button>
+    </div>
+    <div class="sub-page active" id="support-sub-info">
+      <div class="support-category">
+        <button class="cat-btn active" onclick="filterSupport('all',this)">すべて</button>
+        <button class="cat-btn" onclick="filterSupport('food',this)">🍚 フードバンク</button>
+        <button class="cat-btn" onclick="filterSupport('foster',this)">🏠 一時預かり</button>
+        <button class="cat-btn" onclick="filterSupport('legal',this)">⚖️ 法律相談</button>
+      </div>
+      <div class="support-card" data-cat="foster">
+        <div class="support-name">動物愛護市民団体 JCDL</div>
+        <div class="support-area">🌏 全国対応・365日・送迎あり</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">引越し・入院・育児など理由を問わず一時預かり対応</div>
+        <a class="link-btn" href="https://jcdl.jp" target="_blank">🌐 サイトを見る</a>
+      </div>
+      <div class="support-card" data-cat="foster">
+        <div class="support-name">公益財団法人 日本動物愛護協会</div>
+        <div class="support-area">🌏 全国</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">ペットに関する相談・支援全般</div>
+        <a class="link-btn" href="https://jspca.or.jp" target="_blank">🌐 サイトを見る</a>
+      </div>
+      <div class="support-card" data-cat="food">
+        <div class="support-name">ペットのフードバンク（地域別）</div>
+        <div class="support-area">📍 各都道府県</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">経済的に困窮した飼い主へのフード無料提供</div>
+        <a class="link-btn" href="https://www.google.com/search?q=ペットフードバンク+地域" target="_blank">🔍 近くを探す</a>
+      </div>
+      <div class="support-card" data-cat="legal">
+        <div class="support-name">ペット信託対応 法律事務所</div>
+        <div class="support-area">🌏 全国（オンライン相談可）</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">飼い主が亡くなった後のペットの生活を法的に保護</div>
+        <a class="link-btn" href="https://www.google.com/search?q=ペット信託+法律事務所" target="_blank">🔍 探す</a>
+      </div>
+      <div class="support-card" data-cat="foster">
+        <div class="support-name">ペットのおうち（里親マッチング）</div>
+        <div class="support-area">🌏 全国</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">新しい飼い主を探すためのマッチングサービス</div>
+        <a class="link-btn" href="https://www.pet-home.jp" target="_blank">🌐 サイトを見る</a>
+      </div>
+    </div>
+    <div class="sub-page" id="support-sub-sim">
+      <div class="card">
+        <div class="card-title">🧮 飼育費用シミュレーター</div>
+        <div class="form-group">
+          <label class="form-label">種類</label>
+          <select class="form-select" id="sim-species" onchange="calcSim()">
+            <option value="dog-s">犬（小型）</option>
+            <option value="dog-m">犬（中型）</option>
+            <option value="dog-l">犬（大型）</option>
+            <option value="cat">猫</option>
+          </select>
+        </div>
+        <div class="sim-result">
+          <div class="sim-label">月々の費用目安</div>
+          <div class="sim-amount" id="sim-monthly">¥25,000</div>
+          <div style="margin-top:8px;font-size:12px;opacity:0.8">年間 <span id="sim-yearly">約300,000円</span> / 10年間 <span id="sim-total">約3,000,000円</span></div>
+        </div>
+        <div class="sim-breakdown">
+          <div class="sim-row"><span>🍚 フード代</span><span id="sim-food">月8,000円</span></div>
+          <div class="sim-row"><span>🏥 医療費</span><span id="sim-medical">月7,000円</span></div>
+          <div class="sim-row"><span>✂️ トリミング</span><span id="sim-trim">月3,000円</span></div>
+          <div class="sim-row"><span>🛡️ ペット保険</span><span id="sim-insurance">月4,000円</span></div>
+          <div class="sim-row"><span>🛒 消耗品</span><span id="sim-supplies">月3,000円</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 ライフステージ別スケジュール</div>
+        <div class="timeline-item"><div class="timeline-date">🐣 子犬・子猫期（0〜1歳）</div><div style="font-size:13px">ワクチン接種3回・去勢/避妊手術・マイクロチップ登録・しつけ教室</div></div>
+        <div class="timeline-item"><div class="timeline-date">🐕 成犬・成猫期（1〜7歳）</div><div style="font-size:13px">年1回ワクチン・狂犬病予防接種（犬）・年1回健康診断・歯石除去</div></div>
+        <div class="timeline-item"><div class="timeline-date">🐾 シニア期（7歳〜）</div><div style="font-size:13px">年2回健康診断・関節ケア・シニアフードへ切替・投薬管理強化</div></div>
+      </div>
+    </div>
+    <div class="sub-page" id="support-sub-check">
+      <div class="card">
+        <div class="card-title">✅ 飼育準備チェックリスト</div>
+        <div class="progress-bar"><div class="progress-fill" id="check-progress" style="width:0%"></div></div>
+        <div style="text-align:right;font-size:12px;color:var(--text-light);margin-bottom:14px" id="check-count">0 / 8 完了</div>
+        <div id="checklist">
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><div class="check-text">住環境の確認</div><div class="check-sub">ペット可の住居であることを確認した</div></div></div>
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><div class="check-text">家族全員の同意</div><div class="check-sub">同居する全員がペットを迎えることに賛成している</div></div></div>
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><div class="check-text">アレルギーの確認</div><div class="check-sub">家族全員がアレルギー確認を済ませた</div></div></div>
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><div class="check-text">経済的な余裕</div><div class="check-sub">月2〜5万円の飼育費を10年以上負担できる</div></div></div>
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><div class="check-text">時間的な余裕</div><div class="check-sub">毎日のお世話・散歩の時間が確保できる</div></div></div>
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><div class="check-text">緊急時の対応者</div><div class="check-sub">自分が入院した場合に預かってくれる人がいる</div></div></div>
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><div class="check-text">かかりつけ病院の確認</div><div class="check-sub">近くの動物病院を調べて連絡先を把握している</div></div></div>
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><div class="check-text">ペット保険の検討</div><div class="check-sub">医療費の備えとしてペット保険を検討した</div></div></div>
+        </div>
+        <div id="check-result" style="display:none;margin-top:16px">
+          <div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;border-radius:14px;padding:16px;text-align:center">
+            <div style="font-size:24px;margin-bottom:4px">🎉</div>
+            <div style="font-weight:700;font-size:16px">準備完了！</div>
+            <div style="font-size:12px;opacity:0.9;margin-top:4px">ペットを迎える準備が整いました</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchPage('home')" id="nav-home"><span class="nav-icon">🏠</span>ホーム</button>
+    <button class="nav-item" onclick="switchPage('sos')" id="nav-sos"><span class="nav-icon">⚠️</span>SOS相談</button>
+    <button class="nav-item" onclick="switchPage('pet')" id="nav-pet"><span class="nav-icon">🐾</span>ペット情報</button>
+    <button class="nav-item" onclick="switchPage('health')" id="nav-health"><span class="nav-icon">❤️</span>健康記録</button>
+    <button class="nav-item" onclick="switchPage('note')" id="nav-note"><span class="nav-icon">📖</span>ノート</button>
+    <button class="nav-item" onclick="switchPage('support')" id="nav-support"><span class="nav-icon">🔍</span>サポート</button>
+  </nav>
+</div>
+
+<!-- Health Modal -->
+<div class="modal-overlay" id="health-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('health-modal')">×</button>
+    <div class="modal-title">今日の健康記録</div>
+    <div class="form-group"><label class="form-label">体重 (kg)</label><input type="number" class="form-input" id="h-weight" placeholder="例：5.2" step="0.1"></div>
+    <div class="form-group">
+      <label class="form-label">食欲</label>
+      <div class="icon-selector">
+        <div class="icon-opt" onclick="selectOpt(this,'appetite','good')"><span class="opt-icon">😋</span>良い</div>
+        <div class="icon-opt" onclick="selectOpt(this,'appetite','normal')"><span class="opt-icon">😐</span>普通</div>
+        <div class="icon-opt" onclick="selectOpt(this,'appetite','bad')"><span class="opt-icon">😞</span>悪い</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">運動量</label>
+      <div class="icon-selector">
+        <div class="icon-opt" onclick="selectOpt(this,'activity','good')"><span class="opt-icon">🏃</span>活発</div>
+        <div class="icon-opt" onclick="selectOpt(this,'activity','normal')"><span class="opt-icon">🚶</span>普通</div>
+        <div class="icon-opt" onclick="selectOpt(this,'activity','bad')"><span class="opt-icon">😴</span>少ない</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">便の状態</label>
+      <div class="icon-selector">
+        <div class="icon-opt" onclick="selectOpt(this,'stool','good')"><span class="opt-icon">✅</span>良好</div>
+        <div class="icon-opt" onclick="selectOpt(this,'stool','soft')"><span class="opt-icon">⚠️</span>軟便</div>
+        <div class="icon-opt" onclick="selectOpt(this,'stool','bad')"><span class="opt-icon">🚨</span>下痢</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">写真（最大3枚）</label>
+      <div class="photo-upload" onclick="document.getElementById('health-photo').click()">📷 タップして写真を追加<input type="file" id="health-photo" accept="image/*" multiple style="display:none" onchange="previewHealthPhotos(event)"></div>
+      <div class="photo-preview" id="health-photo-preview"></div>
+    </div>
+    <div class="form-group"><label class="form-label">メモ</label><textarea class="form-input" id="h-memo" placeholder="気になったことを記録しておきましょう"></textarea></div>
+    <button class="btn-primary" onclick="saveHealthRecord()">💾 記録を保存する</button>
+  </div>
+</div>
+
+<script>
+// Supabase init
+const SUPABASE_URL = 'https://uyqhuuicekthybrwjpvp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5cWh1dWljZWt0aHlicndqcHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1ODMyMjUsImV4cCI6MjA4NzE1OTIyNX0._HlmhKTBuMucnKWStKazmZjAr2lq8Zi29XyPOrclvNo';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let state = {
+  user: null,
+  petId: null,
+  petProfile: null,
+  healthRecords: [],
+  vaccines: [],
+  selectedOpts: { appetite: '', activity: '', stool: '' },
+  weightChart: null,
+  chartRange: 30
+};
+
+// Solutions
+const solutions = {
+  moving: { title: '引越し先がペット不可', items: ['ペット可物件への引越しを検討する','大家さんへ交渉する（敷金増額を提案）','一時的に信頼できる人に預ける','タスキノートに引き継ぎ情報を残しておく'], orgs: [{ name: 'ペット可物件検索（SUUMO）', url: 'https://suumo.jp' }, { name: '動物愛護市民団体JCDL（一時預かり）', url: 'https://jcdl.jp' }] },
+  money: { title: '経済的に苦しくなった', items: ['ペットフードバンクを利用する（無料）','低価格動物病院を利用する','ペット保険の見直しをする','自治体の生活支援相談窓口へ相談する'], orgs: [{ name: 'ペットフードバンク（地域別）', url: 'https://www.google.com/search?q=ペットフードバンク+近く' }, { name: '社会福祉協議会', url: 'https://www.google.com/search?q=社会福祉協議会+近く' }] },
+  allergy: { title: '家族がアレルギーになった', items: ['アレルギー専門医に相談する','空気清浄機の設置・こまめな掃除','アレルゲン免疫療法を検討する','どうしても無理な場合は責任ある譲渡先を探す'], orgs: [{ name: 'アレルギー専門外来', url: 'https://www.google.com/search?q=アレルギー専門外来+近く' }, { name: 'ペットのおうち（里親）', url: 'https://www.pet-home.jp' }] },
+  hospital: { title: '入院・介護が必要になった', items: ['ペット信託を活用する（法的に安心）','一時預かりサービスを手配する','タスキノートにケア情報を記録しておく','事前に次の飼い主候補を登録しておく'], orgs: [{ name: '動物愛護市民団体JCDL', url: 'https://jcdl.jp' }, { name: 'ペット信託対応 法律事務所', url: 'https://www.google.com/search?q=ペット信託+法律事務所' }] },
+  baby: { title: '出産・育児で手が回らない', items: ['ペットシッターを利用する','家族や友人に一時的に手伝ってもらう','育児が落ち着くまで一時預かりを利用する','生活リズムを見直してペットの時間を確保する'], orgs: [{ name: 'ペットシッターサービス', url: 'https://www.google.com/search?q=ペットシッター+近く' }, { name: '動物愛護市民団体JCDL', url: 'https://jcdl.jp' }] },
+  different: { title: '思っていた飼育と違った', items: ['ドッグトレーナーや専門家に相談する','しつけ教室に通う','問題行動の原因を理解して対処法を学ぶ','どうしても無理な場合は責任ある譲渡先を探す'], orgs: [{ name: 'ドッグトレーナー', url: 'https://www.google.com/search?q=ドッグトレーナー+近く' }, { name: 'ペットのおうち（里親）', url: 'https://www.pet-home.jp' }] },
+  other: { title: 'その他のご相談', items: ['動物愛護団体へ相談する','獣医師や専門家へ相談する','地域の動物愛護センターへ問い合わせる'], orgs: [{ name: '日本動物愛護協会', url: 'https://jspca.or.jp' }, { name: '動物愛護市民団体JCDL', url: 'https://jcdl.jp' }] }
+};
+
+// Auth
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('signup-form').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('auth-message').innerHTML = '';
+}
+
+function showAuthMsg(msg, type) {
+  document.getElementById('auth-message').innerHTML = `<div class="auth-msg ${type}">${msg}</div>`;
+}
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) { showAuthMsg('メールアドレスとパスワードを入力してください', 'error'); return; }
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'ログイン中...';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  btn.disabled = false; btn.textContent = '🐾 ログイン';
+  if (error) { showAuthMsg('ログインに失敗しました。メールアドレスとパスワードを確認してください。', 'error'); return; }
+  onLogin(data.user);
+}
+
+async function handleSignup() {
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+  if (!email || !password) { showAuthMsg('メールアドレスとパスワードを入力してください', 'error'); return; }
+  if (password.length < 6) { showAuthMsg('パスワードは6文字以上で入力してください', 'error'); return; }
+  const btn = document.getElementById('signup-btn');
+  btn.disabled = true; btn.textContent = '登録中...';
+  const { data, error } = await sb.auth.signUp({ email, password });
+  btn.disabled = false; btn.textContent = '🐾 アカウントを作成する';
+  if (error) { showAuthMsg('登録に失敗しました: ' + error.message, 'error'); return; }
+  showAuthMsg('✅ 登録完了！確認メールを送信しました。メールを確認してからログインしてください。', 'success');
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  state.user = null;
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app-screen').classList.remove('active');
+}
+
+async function onLogin(user) {
+  state.user = user;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').classList.add('active');
+  await ensureProfile();
+  await loadPetProfile();
+  await loadHealthRecords();
+  updateHome();
+  calcSim();
+}
+
+async function ensureProfile() {
+  const { data } = await sb.from('profiles').select('*').eq('id', state.user.id).single();
+  if (!data) {
+    await sb.from('profiles').insert({ id: state.user.id, email: state.user.email });
+  }
+}
+
+// Pet Profile
+async function loadPetProfile() {
+  const { data } = await sb.from('pets').select('*').eq('user_id', state.user.id).single();
+  if (data) {
+    state.petProfile = data;
+    state.petId = data.id;
+    fillPetForm(data);
+  }
+}
+
+function fillPetForm(p) {
+  if (p.name) document.getElementById('pet-name').value = p.name;
+  if (p.species) document.getElementById('pet-species').value = p.species;
+  if (p.breed) document.getElementById('pet-breed').value = p.breed;
+  if (p.age) document.getElementById('pet-age').value = p.age;
+  if (p.gender) document.getElementById('pet-gender').value = p.gender;
+  if (p.personality) document.getElementById('pet-personality').value = p.personality;
+  if (p.food) document.getElementById('pet-food').value = p.food;
+  if (p.fears) document.getElementById('pet-fears').value = p.fears;
+  if (p.medical) document.getElementById('pet-medical').value = p.medical;
+  if (p.meds) document.getElementById('pet-meds').value = p.meds;
+  if (p.chip) document.getElementById('pet-chip').value = p.chip;
+  if (p.vet) document.getElementById('pet-vet').value = p.vet;
+  if (p.photo) document.getElementById('pet-avatar-display').innerHTML = `<img src="${p.photo}" style="width:80px;height:80px;object-fit:cover;border-radius:50%">`;
+}
+
+async function savePetProfile() {
+  const profile = {
+    user_id: state.user.id,
+    name: document.getElementById('pet-name').value,
+    species: document.getElementById('pet-species').value,
+    breed: document.getElementById('pet-breed').value,
+    age: parseInt(document.getElementById('pet-age').value) || null,
+    gender: document.getElementById('pet-gender').value,
+    personality: document.getElementById('pet-personality').value,
+    food: document.getElementById('pet-food').value,
+    fears: document.getElementById('pet-fears').value,
+    medical: document.getElementById('pet-medical').value,
+    meds: document.getElementById('pet-meds').value,
+    chip: document.getElementById('pet-chip').value,
+    vet: document.getElementById('pet-vet').value,
+    photo: state.petProfile?.photo || null
+  };
+
+  if (state.petId) {
+    await sb.from('pets').update(profile).eq('id', state.petId);
+  } else {
+    const { data } = await sb.from('pets').insert(profile).select().single();
+    if (data) { state.petId = data.id; }
+  }
+  state.petProfile = profile;
+  alert('✅ ペット情報を保存しました');
+  updateHome();
+}
+
+function setPetPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('pet-avatar-display').innerHTML = `<img src="${ev.target.result}" style="width:80px;height:80px;object-fit:cover;border-radius:50%">`;
+    if (!state.petProfile) state.petProfile = {};
+    state.petProfile.photo = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateHome() {
+  const p = state.petProfile;
+  const el = document.getElementById('pet-summary-content');
+  if (p && p.name) {
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:12px"><div style="width:50px;height:50px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid var(--primary);overflow:hidden;flex-shrink:0">${p.photo ? `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover">` : '🐶'}</div><div><div style="font-weight:700;font-size:16px">${p.name}</div><div style="font-size:12px;color:var(--text-light)">${p.breed || ''} ${p.age ? p.age + '歳' : ''}</div></div></div>`;
+  }
+}
+
+// Health Records
+async function loadHealthRecords() {
+  if (!state.user) return;
+  const { data } = await sb.from('health_records').select('*').eq('user_id', state.user.id).order('recorded_at', { ascending: false }).limit(30);
+  if (data) { state.healthRecords = data; updateHealthTimeline(); }
+}
+
+function openHealthModal() {
+  state.selectedOpts = { appetite: '', activity: '', stool: '' };
+  document.getElementById('h-weight').value = '';
+  document.getElementById('h-memo').value = '';
+  document.getElementById('health-photo-preview').innerHTML = '';
+  document.querySelectorAll('.icon-opt').forEach(o => o.classList.remove('selected'));
+  document.getElementById('health-modal').classList.add('active');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+function selectOpt(el, type, val) {
+  el.closest('.icon-selector').querySelectorAll('.icon-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  state.selectedOpts[type] = val;
+}
+
+function previewHealthPhotos(e) {
+  const preview = document.getElementById('health-photo-preview');
+  preview.innerHTML = '';
+  Array.from(e.target.files).slice(0, 3).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => { const img = document.createElement('img'); img.src = ev.target.result; img.className = 'photo-thumb'; preview.appendChild(img); };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveHealthRecord() {
+  const weight = parseFloat(document.getElementById('h-weight').value);
+  const memo = document.getElementById('h-memo').value;
+  const photos = Array.from(document.getElementById('health-photo-preview').querySelectorAll('img')).map(i => i.src);
+
+  const record = {
+    user_id: state.user.id,
+    pet_id: state.petId,
+    weight: weight || null,
+    appetite: state.selectedOpts.appetite,
+    activity: state.selectedOpts.activity,
+    stool: state.selectedOpts.stool,
+    memo,
+    photos
+  };
+
+  const { data } = await sb.from('health_records').insert(record).select().single();
+  if (data) { state.healthRecords.unshift(data); }
+
+  if (state.healthRecords.length >= 2 && weight) {
+    const prev = state.healthRecords[1].weight;
+    if (prev) {
+      const change = Math.abs((weight - prev) / prev * 100);
+      if (change >= 3) setTimeout(() => alert('⚠️ 体重が前回比' + change.toFixed(1) + '%変化しています。獣医への相談をおすすめします。'), 300);
+    }
+  }
+
+  closeModal('health-modal');
+  updateHealthTimeline();
+}
+
+function updateHealthTimeline() {
+  const container = document.getElementById('health-timeline');
+  if (!state.healthRecords || state.healthRecords.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>まだ記録がありません<br>今日の記録をつけましょう</p></div>`;
+    return;
+  }
+  const appetiteLabel = { good: '😋 食欲良好', normal: '😐 食欲普通', bad: '😞 食欲不振' };
+  const activityLabel = { good: '🏃 活発', normal: '🚶 普通', bad: '😴 活動少' };
+  const stoolLabel = { good: '✅ 便良好', soft: '⚠️ 軟便', bad: '🚨 下痢' };
+
+  container.innerHTML = state.healthRecords.slice(0, 10).map((r, i) => {
+    const prev = state.healthRecords[i + 1];
+    let weightChange = '';
+    if (r.weight && prev && prev.weight) {
+      const diff = r.weight - prev.weight;
+      if (diff > 0) weightChange = `<span class="weight-change up">▲${diff.toFixed(1)}kg</span>`;
+      else if (diff < 0) weightChange = `<span class="weight-change down">▼${Math.abs(diff).toFixed(1)}kg</span>`;
+    }
+    return `<div class="timeline-item"><div class="timeline-date">${new Date(r.recorded_at).toLocaleDateString('ja-JP')}</div>${r.weight ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="weight-display">${r.weight}kg</span>${weightChange}</div>` : ''}<div class="health-icons">${r.appetite ? `<span class="health-badge">${appetiteLabel[r.appetite]}</span>` : ''}${r.activity ? `<span class="health-badge">${activityLabel[r.activity]}</span>` : ''}${r.stool ? `<span class="health-badge">${stoolLabel[r.stool]}</span>` : ''}</div>${r.photos && r.photos.length > 0 ? `<div class="photo-preview">${r.photos.map(p => `<img src="${p}" class="photo-thumb">`).join('')}</div>` : ''}${r.memo ? `<div style="font-size:12px;color:var(--text-light);margin-top:6px">📝 ${r.memo}</div>` : ''}</div>`;
+  }).join('');
+}
+
+// Chart
+function initChart() {
+  const records = state.healthRecords.filter(r => r.weight).slice(0, state.chartRange).reverse();
+  const labels = records.map(r => new Date(r.recorded_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }));
+  const data = records.map(r => r.weight);
+  const ctx = document.getElementById('weightChart');
+  if (!ctx) return;
+  if (state.weightChart) state.weightChart.destroy();
+  const avg = data.length > 0 ? data.reduce((a, b) => a + b, 0) / data.length : 5;
+  state.weightChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.length > 0 ? labels : ['記録なし'],
+      datasets: [
+        { label: '体重(kg)', data: data.length > 0 ? data : [0], borderColor: '#E8845A', backgroundColor: 'rgba(232,132,90,0.1)', borderWidth: 2, pointBackgroundColor: '#E8845A', tension: 0.3, fill: true },
+        { label: '理想体重', data: labels.map(() => avg), borderColor: '#8B6F5E', borderWidth: 1, borderDash: [5, 5], pointRadius: 0 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false, grid: { color: '#EDD9C8' } }, x: { grid: { display: false } } } }
+  });
+}
+
+function switchChartRange(range, el) {
+  state.chartRange = range;
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  initChart();
+}
+
+// Vaccines
+async function loadVaccines() {
+  if (!state.user) return;
+  const { data } = await sb.from('vaccines').select('*').eq('user_id', state.user.id);
+  if (data) { state.vaccines = data; renderVaccines(); }
+}
+
+function renderVaccines() {
+  const container = document.getElementById('vaccine-list');
+  if (!state.vaccines || state.vaccines.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding:20px"><p>ワクチン記録がありません</p></div>`;
+    return;
+  }
+  const today = new Date();
+  container.innerHTML = state.vaccines.map(v => {
+    const next = v.next_date ? new Date(v.next_date) : null;
+    const diff = next ? Math.ceil((next - today) / (1000 * 60 * 60 * 24)) : null;
+    const badge = diff !== null ? (diff <= 7 ? `<span class="vaccine-alert">⚠️ ${diff === 0 ? '今日' : diff + '日後'}</span>` : `<span class="vaccine-ok">✓ 余裕あり</span>`) : '';
+    return `<div class="vaccine-item"><div><div class="vaccine-name">${v.name}</div>${v.next_date ? `<div class="vaccine-date">次回：${new Date(v.next_date).toLocaleDateString('ja-JP')}</div>` : ''}</div>${badge}</div>`;
+  }).join('');
+}
+
+async function openVaccineModal() {
+  const name = prompt('ワクチン名を入力してください（例：混合ワクチン5種）');
+  if (!name) return;
+  const nextDate = prompt('次回接種予定日を入力（例：2026-06-01）');
+  const { data } = await sb.from('vaccines').insert({ user_id: state.user.id, pet_id: state.petId, name, next_date: nextDate || null }).select().single();
+  if (data) { state.vaccines.push(data); renderVaccines(); }
+}
+
+async function openMedModal() {
+  const name = prompt('薬の名前を入力してください');
+  if (!name) return;
+  const dosage = prompt('用量・服用方法（例：1日1回1錠）');
+  const medList = document.getElementById('med-list');
+  const existing = medList.querySelectorAll('.vaccine-item').length;
+  if (existing === 0) medList.innerHTML = '';
+  medList.innerHTML += `<div class="vaccine-item"><div><div class="vaccine-name">${name}</div><div class="vaccine-date">${dosage}</div></div><span class="vaccine-ok">服用中</span></div>`;
+}
+
+// Note
+async function loadNote() {
+  if (!state.petId) return;
+  const { data } = await sb.from('tasuki_notes').select('*').eq('user_id', state.user.id).single();
+  if (data) {
+    if (data.message) document.getElementById('note-message').value = data.message;
+    if (data.next_owner) document.getElementById('note-next-owner').value = data.next_owner;
+    if (data.next_contact) document.getElementById('note-next-contact').value = data.next_contact;
+    if (data.next_relation) document.getElementById('note-next-relation').value = data.next_relation;
+    if (data.feeding) document.getElementById('note-feeding').value = data.feeding;
+    if (data.walk) document.getElementById('note-walk').value = data.walk;
+    if (data.caution) document.getElementById('note-caution').value = data.caution;
+    if (data.cost_food) document.getElementById('note-cost-food').value = data.cost_food;
+    if (data.cost_medical) document.getElementById('note-cost-medical').value = data.cost_medical;
+    if (data.cost_other) document.getElementById('note-cost-other').value = data.cost_other;
+  }
+}
+
+async function saveNote() {
+  const note = {
+    user_id: state.user.id,
+    pet_id: state.petId,
+    message: document.getElementById('note-message').value,
+    next_owner: document.getElementById('note-next-owner').value,
+    next_contact: document.getElementById('note-next-contact').value,
+    next_relation: document.getElementById('note-next-relation').value,
+    feeding: document.getElementById('note-feeding').value,
+    walk: document.getElementById('note-walk').value,
+    caution: document.getElementById('note-caution').value,
+    cost_food: parseInt(document.getElementById('note-cost-food').value) || null,
+    cost_medical: parseInt(document.getElementById('note-cost-medical').value) || null,
+    cost_other: parseInt(document.getElementById('note-cost-other').value) || null
+  };
+  const { data: existing } = await sb.from('tasuki_notes').select('id').eq('user_id', state.user.id).single();
+  if (existing) { await sb.from('tasuki_notes').update(note).eq('id', existing.id); }
+  else { await sb.from('tasuki_notes').insert(note); }
+  alert('✅ タスキノートを保存しました');
+}
+
+function shareNote() {
+  if (navigator.share) { navigator.share({ title: 'Tasuki タスキノート', text: 'もしもの時のためのペットケア情報です', url: window.location.href }); }
+  else { navigator.clipboard.writeText(window.location.href).then(() => alert('URLをコピーしました')); }
+}
+
+// SOS
+function showSolution(key) {
+  const sol = solutions[key];
+  document.getElementById('solution-area').innerHTML = `<div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px;margin-top:12px"><div style="font-size:16px;font-weight:700;margin-bottom:12px">📋 ${sol.title}</div><div style="font-size:13px;font-weight:700;margin-bottom:8px">具体的な解決策</div>${sol.items.map((item, i) => `<div class="solution-item"><div class="solution-num">${i+1}</div><div>${item}</div></div>`).join('')}<div style="margin-top:12px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">相談先・支援団体</div>${sol.orgs.map(org => `<div class="org-item"><div class="org-name">${org.name}</div><a class="org-link" href="${org.url}" target="_blank">🌐 詳しく見る →</a></div>`).join('')}</div><div class="action-btns"><button class="action-btn" onclick="switchPage('note')">📖 タスキノートを書く</button><button class="action-btn" onclick="switchPage('support')">🔍 支援を探す</button></div></div>`;
+  document.getElementById('solution-area').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Navigation
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+  if (page === 'health') { updateHealthTimeline(); setTimeout(initChart, 100); loadVaccines(); }
+  if (page === 'note') loadNote();
+}
+
+function switchSubTab(page, tab, el) {
+  const prefix = page + '-sub-';
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(p => p.classList.remove('active'));
+  document.getElementById(prefix + tab).classList.add('active');
+  document.querySelectorAll(`#page-${page} .sub-tab`).forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (tab === 'graph') setTimeout(initChart, 100);
+}
+
+function filterSupport(cat, el) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.support-card').forEach(card => { card.style.display = (cat === 'all' || card.dataset.cat === cat) ? 'block' : 'none'; });
+}
+
+function calcSim() {
+  const species = document.getElementById('sim-species')?.value || 'dog-s';
+  const costs = { 'dog-s': { food: 6000, medical: 6000, trim: 4000, insurance: 3000, supplies: 2000 }, 'dog-m': { food: 9000, medical: 8000, trim: 5000, insurance: 4000, supplies: 3000 }, 'dog-l': { food: 15000, medical: 10000, trim: 6000, insurance: 5000, supplies: 4000 }, 'cat': { food: 5000, medical: 5000, trim: 1000, insurance: 2500, supplies: 2000 } };
+  const c = costs[species];
+  const monthly = Object.values(c).reduce((a, b) => a + b, 0);
+  document.getElementById('sim-monthly').textContent = '¥' + monthly.toLocaleString();
+  document.getElementById('sim-yearly').textContent = '約' + (monthly * 12).toLocaleString() + '円';
+  document.getElementById('sim-total').textContent = '約' + (monthly * 120).toLocaleString() + '円';
+  document.getElementById('sim-food').textContent = '月' + c.food.toLocaleString() + '円';
+  document.getElementById('sim-medical').textContent = '月' + c.medical.toLocaleString() + '円';
+  document.getElementById('sim-trim').textContent = '月' + c.trim.toLocaleString() + '円';
+  document.getElementById('sim-insurance').textContent = '月' + c.insurance.toLocaleString() + '円';
+  document.getElementById('sim-supplies').textContent = '月' + c.supplies.toLocaleString() + '円';
+}
+
+function toggleCheck(el) {
+  const box = el.querySelector('.check-box');
+  box.classList.toggle('checked');
+  box.textContent = box.classList.contains('checked') ? '✓' : '';
+  const total = document.querySelectorAll('.check-item').length;
+  const done = document.querySelectorAll('.check-box.checked').length;
+  document.getElementById('check-progress').style.width = (done / total * 100) + '%';
+  document.getElementById('check-count').textContent = done + ' / ' + total + ' 完了';
+  document.getElementById('check-result').style.display = done === total ? 'block' : 'none';
+}
+
+// Auth state check
+sb.auth.onAuthStateChange((event, session) => {
+  if (session?.user) { onLogin(session.user); }
+});
+</script>
+</body>
+</html>
