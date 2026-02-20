@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/app", "destination": "/tasuki.html" },
+    { "source": "/", "destination": "/tasuki-lp.html" },
     { "source": "/(.*)", "destination": "/tasuki.html" }
   ]
 }
