@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#E8845A">
+  <meta name="description" content="大切な命を、次へつなぐ。ペットのもしもに備えるアプリ">
+  <title>Tasuki タスキ - 大切な命を、次へつなぐ。</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #E8845A;
+      --primary-light: #F5A07A;
+      --primary-dark: #C86A40;
+      --accent: #F5E6D3;
+      --text: #3D2B1F;
+      --text-light: #8B6F5E;
+      --white: #FFFFFF;
+      --bg: #FDF8F4;
+      --card: #FFFFFF;
+      --border: #EDD9C8;
+      --danger: #E53E3E;
+      --success: #38A169;
+      --warning: #D69E2E;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* Header */
+    .header {
+      background: var(--white);
+      padding: 16px 20px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .logo-icon { font-size: 28px; }
+
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .logo-text span {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-light);
+      margin-left: 4px;
+    }
+
+    .tagline {
+      font-size: 12px;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 100;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: none;
+      color: var(--text-light);
+      font-size: 10px;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    .nav-item.active { color: var(--primary); }
+    .nav-item .nav-icon { font-size: 20px; margin-bottom: 2px; }
+
+    /* Pages */
+    .page { display: none; padding: 16px; }
+    .page.active { display: block; }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    /* SOS Button */
+    .sos-btn {
+      background: linear-gradient(135deg, #E53E3E, #C53030);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      padding: 18px;
+      width: 100%;
+      font-size: 18px;
+      font-weight: 700;
+      font-family: 'Noto Sans JP', sans-serif;
+      cursor: pointer;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(229,62,62,0.3);
+      transition: transform 0.1s;
+    }
+
+    .sos-btn:active { transform: scale(0.98); }
+
+    /* Alert Banner */
+    .alert-banner {
+      background: #FFF5F5;
+      border: 1px solid #FED7D7;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--danger);
+    }
+
+    /* Quick Menu Grid */
+    .quick-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .quick-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-item:active { transform: scale(0.97); background: var(--accent); }
+    .quick-item .icon { font-size: 24px; margin-bottom: 6px; }
+    .quick-item .label { font-size: 12px; font-weight: 700; color: var(--text); }
+    .quick-item .sub { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+
+    /* SOS Situations */
+    .situation-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+
+    .situation-card:active { background: var(--accent); }
+    .situation-card .sit-icon { font-size: 28px; }
+    .situation-card .sit-text { font-size: 15px; font-weight: 500; }
+
+    /* Solution Panel */
+    .solution-panel {
+      display: none;
+      background: var(--accent);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .solution-panel.active { display: block; }
+
+    .solution-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .solution-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+
+    .solution-num {
+      background: var(--primary);
+      color: white;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .org-list { margin-top: 12px; }
+    .org-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+
+    .org-item {
+      background: var(--white);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .org-name { font-weight: 700; color: var(--text); }
+    .org-link { color: var(--primary); text-decoration: none; font-size: 11px; }
+
+    .action-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .action-btn {
+      background: var(--white);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Noto Sans JP', sans-serif;
+      text-align: center;
+    }
+
+    /* Forms */
+    .form-group { margin-bottom: 14px; }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--white);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus { border-color: var(--primary); }
+
+    .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--white);
+      color: var(--text);
+      outline: none;
+    }
+
+    /* Icon Selector */
+    .icon-selector {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-opt {
+      flex: 1;
+      padding: 10px 6px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.2s;
+    }
+
+    .icon-opt .opt-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+    .icon-opt.selected { border-color: var(--primary); background: var(--accent); }
+
+    /* Primary Button */
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      width: 100%;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Noto Sans JP', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 12px;
+      width: 100%;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Noto Sans JP', sans-serif;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* Health Timeline */
+    .timeline-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .timeline-date { font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
+
+    .health-icons { display: flex; gap: 8px; margin-bottom: 6px; }
+
+    .health-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: var(--accent);
+      color: var(--text);
+    }
+
+    .weight-display {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .weight-change {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .weight-change.up { background: #FFF5F5; color: var(--danger); }
+    .weight-change.down { background: #F0FFF4; color: var(--success); }
+    .weight-change.same { background: var(--accent); color: var(--text-light); }
+
+    /* Chart */
+    .chart-container {
+      position: relative;
+      height: 200px;
+      margin: 12px 0;
+    }
+
+    .chart-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .chart-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: var(--white);
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    .chart-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Vaccine List */
+    .vaccine-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: var(--accent);
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    .vaccine-name { font-size: 13px; font-weight: 700; }
+    .vaccine-date { font-size: 11px; color: var(--text-light); }
+
+    .vaccine-alert {
+      background: #FFF5F5;
+      border: 1px solid #FED7D7;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .vaccine-ok {
+      background: #F0FFF4;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: var(--success);
+    }
+
+    /* Pet Profile */
+    .pet-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 12px;
+      border: 3px solid var(--primary);
+      overflow: hidden;
+    }
+
+    .pet-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Tasuki Note */
+    .note-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .note-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Support */
+    .support-category {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .cat-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: var(--white);
+      font-family: 'Noto Sans JP', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .support-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .support-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .support-area { font-size: 11px; color: var(--text-light); margin-bottom: 8px; }
+    .support-links { display: flex; gap: 8px; }
+
+    .link-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      background: var(--white);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    /* Simulator */
+    .sim-result {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .sim-amount {
+      font-size: 32px;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .sim-label { font-size: 12px; opacity: 0.9; margin-bottom: 4px; }
+
+    .sim-breakdown {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .sim-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .sim-row:last-child { border-bottom: none; }
+
+    /* Checklist */
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .check-box {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .check-box.checked { background: var(--primary); border-color: var(--primary); }
+    .check-text { font-size: 13px; }
+    .check-sub { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+    /* Progress */
+    .progress-bar {
+      background: var(--border);
+      border-radius: 20px;
+      height: 8px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: var(--primary);
+      height: 100%;
+      border-radius: 20px;
+      transition: width 0.5s;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      align-items: flex-end;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--white);
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-light);
+      background: none;
+      border: none;
+    }
+
+    /* Page Title */
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .page-subtitle {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 16px;
+    }
+
+    /* Plan Badge */
+    .plan-badge {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    /* Tabs within page */
+    .sub-tabs {
+      display: flex;
+      background: var(--accent);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 16px;
+      gap: 4px;
+    }
+
+    .sub-tab {
+      flex: 1;
+      padding: 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: 'Noto Sans JP', sans-serif;
+      color: var(--text-light);
+      transition: all 0.2s;
+    }
+
+    .sub-tab.active { background: var(--white); color: var(--primary); }
+
+    .sub-page { display: none; }
+    .sub-page.active { display: block; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-light);
+    }
+
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    /* Photo upload */
+    .photo-upload {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--text-light);
+      font-size: 13px;
+    }
+
+    .photo-upload:hover { border-color: var(--primary); background: var(--accent); }
+    .photo-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .photo-thumb { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; }
+
+    /* Section header */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .add-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    textarea.form-input { min-height: 80px; resize: vertical; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">
+    <span class="logo-icon">🐾</span>
+    <div>
+      <div class="logo-text">Tasuki <span>タスキ</span></div>
+    </div>
+  </div>
+  <div class="tagline">大切な命を、次へつなぐ。</div>
+</div>
+
+<!-- Pages -->
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div id="alert-area"></div>
+
+  <button class="sos-btn" onclick="switchPage('sos')">
+    ⚠️ SOS 緊急相談
+  </button>
+
+  <div class="card" id="pet-summary">
+    <div class="card-title">ペットの情報</div>
+    <div id="pet-summary-content">
+      <div style="text-align:center;padding:12px;color:var(--text-light);font-size:13px;" onclick="switchPage('pet')">
+        ペット情報を登録しましょう →
+      </div>
+    </div>
+  </div>
+
+  <div class="quick-grid">
+    <div class="quick-item" onclick="switchPage('health')">
+      <div class="icon">❤️</div>
+      <div class="label">健康記録をつける</div>
+      <div class="sub">日々の体調管理</div>
+    </div>
+    <div class="quick-item" onclick="switchPage('note')">
+      <div class="icon">📖</div>
+      <div class="label">タスキノートを書く</div>
+      <div class="sub">大切な想いを残す</div>
+    </div>
+    <div class="quick-item" onclick="switchPage('pet')">
+      <div class="icon">🐶</div>
+      <div class="label">ペット情報を編集</div>
+      <div class="sub">プロフィール管理</div>
+    </div>
+    <div class="quick-item" onclick="switchPage('support')">
+      <div class="icon">🔍</div>
+      <div class="label">サポートを探す</div>
+      <div class="sub">支援情報・シミュレーター</div>
+    </div>
+  </div>
+</div>
+
+<!-- SOS -->
+<div class="page" id="page-sos">
+  <div class="page-title">SOS相談</div>
+  <div class="page-subtitle">飼い続けることが不安ですか？まず相談を。</div>
+
+  <div id="sos-list">
+    <div class="situation-card" onclick="showSolution('moving')">
+      <span class="sit-icon">🏠</span>
+      <span class="sit-text">引越し先がペット不可</span>
+    </div>
+    <div class="situation-card" onclick="showSolution('money')">
+      <span class="sit-icon">💰</span>
+      <span class="sit-text">経済的に苦しくなった</span>
+    </div>
+    <div class="situation-card" onclick="showSolution('allergy')">
+      <span class="sit-icon">🤧</span>
+      <span class="sit-text">家族がアレルギーになった</span>
+    </div>
+    <div class="situation-card" onclick="showSolution('hospital')">
+      <span class="sit-icon">🏥</span>
+      <span class="sit-text">入院・介護が必要になった</span>
+    </div>
+    <div class="situation-card" onclick="showSolution('baby')">
+      <span class="sit-icon">👶</span>
+      <span class="sit-text">出産・育児で手が回らない</span>
+    </div>
+    <div class="situation-card" onclick="showSolution('different')">
+      <span class="sit-icon">😔</span>
+      <span class="sit-text">思っていた飼育と違った</span>
+    </div>
+    <div class="situation-card" onclick="showSolution('other')">
+      <span class="sit-icon">❓</span>
+      <span class="sit-text">その他</span>
+    </div>
+  </div>
+
+  <div id="solution-area"></div>
+</div>
+
+<!-- PET PROFILE -->
+<div class="page" id="page-pet">
+  <div class="page-title">ペット情報</div>
+
+  <div class="card">
+    <div class="pet-avatar" id="pet-avatar-display">🐶</div>
+    <div class="form-group">
+      <label class="form-label">📷 写真</label>
+      <div class="photo-upload" onclick="document.getElementById('pet-photo-input').click()">
+        タップして写真を追加
+        <input type="file" id="pet-photo-input" accept="image/*" style="display:none" onchange="setPetPhoto(event)">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">名前 *</label>
+      <input type="text" class="form-input" id="pet-name" placeholder="例：ポチ">
+    </div>
+    <div class="form-group">
+      <label class="form-label">種類</label>
+      <select class="form-select" id="pet-species">
+        <option value="">選択してください</option>
+        <option value="dog">犬</option>
+        <option value="cat">猫</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">犬種・猫種</label>
+      <input type="text" class="form-input" id="pet-breed" placeholder="例：柴犬、トイプードル">
+    </div>
+    <div class="form-group">
+      <label class="form-label">年齢</label>
+      <input type="number" class="form-input" id="pet-age" placeholder="例：3">
+    </div>
+    <div class="form-group">
+      <label class="form-label">性別</label>
+      <select class="form-select" id="pet-gender">
+        <option value="">選択してください</option>
+        <option value="male">オス</option>
+        <option value="female">メス</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">性格・特徴</label>
+      <textarea class="form-input" id="pet-personality" placeholder="例：人懐っこい、散歩が大好き"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">好きな食べ物</label>
+      <input type="text" class="form-input" id="pet-food" placeholder="例：ささみ、りんご">
+    </div>
+    <div class="form-group">
+      <label class="form-label">苦手なもの</label>
+      <input type="text" class="form-input" id="pet-fears" placeholder="例：雷、知らない人">
+    </div>
+    <div class="form-group">
+      <label class="form-label">既往歴・病気</label>
+      <textarea class="form-input" id="pet-medical" placeholder="例：アレルギー性皮膚炎（2022年診断）"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">現在の薬</label>
+      <input type="text" class="form-input" id="pet-meds" placeholder="例：アポキル錠（1日1回）">
+    </div>
+    <div class="form-group">
+      <label class="form-label">マイクロチップ番号</label>
+      <input type="text" class="form-input" id="pet-chip" placeholder="15桁の番号">
+    </div>
+    <div class="form-group">
+      <label class="form-label">かかりつけ動物病院</label>
+      <input type="text" class="form-input" id="pet-vet" placeholder="例：○○動物病院（03-XXXX-XXXX）">
+    </div>
+    <button class="btn-primary" onclick="savePetProfile()">💾 保存する</button>
+  </div>
+</div>
+
+<!-- HEALTH -->
+<div class="page" id="page-health">
+  <div class="page-title">健康記録</div>
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSubTab('health', 'record')">記録</button>
+    <button class="sub-tab" onclick="switchSubTab('health', 'graph')">グラフ</button>
+    <button class="sub-tab" onclick="switchSubTab('health', 'vaccine')">ワクチン・投薬</button>
+  </div>
+
+  <!-- Record Sub -->
+  <div class="sub-page active" id="health-sub-record">
+    <button class="btn-primary" style="margin-bottom:16px" onclick="openHealthModal()">＋ 今日の記録をつける</button>
+
+    <div id="health-timeline">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>まだ記録がありません<br>今日の記録をつけましょう</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graph Sub -->
+  <div class="sub-page" id="health-sub-graph">
+    <div class="chart-tabs">
+      <button class="chart-tab active" onclick="switchChartRange(30, this)">30日</button>
+      <button class="chart-tab" onclick="switchChartRange(90, this)">90日</button>
+      <button class="chart-tab" onclick="switchChartRange(365, this)">1年</button>
+    </div>
+    <div class="card">
+      <div class="card-title">体重推移グラフ</div>
+      <div class="chart-container">
+        <canvas id="weightChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">PDF出力 <span class="plan-badge">PREMIUM</span></div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">獣医への診察時に使える健康記録PDFを出力できます</p>
+      <button class="btn-secondary" onclick="alert('プレミアムプラン（月額1,480円）でご利用いただけます')">📄 PDF出力する</button>
+    </div>
+  </div>
+
+  <!-- Vaccine Sub -->
+  <div class="sub-page" id="health-sub-vaccine">
+    <div class="section-header">
+      <div class="card-title" style="margin:0">ワクチン・接種記録</div>
+      <button class="add-btn" onclick="openVaccineModal()">＋ 追加</button>
+    </div>
+
+    <div id="vaccine-list">
+      <div class="vaccine-item">
+        <div>
+          <div class="vaccine-name">混合ワクチン（5種）</div>
+          <div class="vaccine-date">次回：2026年4月1日</div>
+        </div>
+        <span class="vaccine-alert">⚠️ 40日後</span>
+      </div>
+      <div class="vaccine-item">
+        <div>
+          <div class="vaccine-name">狂犬病予防接種</div>
+          <div class="vaccine-date">次回：2026年6月1日</div>
+        </div>
+        <span class="vaccine-ok">✓ 余裕あり</span>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:20px">
+      <div class="card-title" style="margin:0">投薬管理</div>
+      <button class="add-btn" onclick="openMedModal()">＋ 追加</button>
+    </div>
+
+    <div id="med-list">
+      <div class="empty-state" style="padding:20px">
+        <p>投薬記録がありません</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TASUKI NOTE -->
+<div class="page" id="page-note">
+  <div class="page-title">タスキノート</div>
+  <div class="page-subtitle">もしもの時のために、大切な想いを残す</div>
+
+  <div class="note-section">
+    <div class="note-section-title">🐾 ペットへの想い・お願い</div>
+    <div class="form-group">
+      <textarea class="form-input" id="note-message" placeholder="次の飼い主さんへのメッセージを書いてください..." style="min-height:100px"></textarea>
+    </div>
+  </div>
+
+  <div class="note-section">
+    <div class="note-section-title">👤 次の飼い主候補</div>
+    <div class="form-group">
+      <label class="form-label">名前</label>
+      <input type="text" class="form-input" id="note-next-owner" placeholder="例：田中 花子">
+    </div>
+    <div class="form-group">
+      <label class="form-label">連絡先</label>
+      <input type="text" class="form-input" id="note-next-contact" placeholder="例：090-XXXX-XXXX">
+    </div>
+    <div class="form-group">
+      <label class="form-label">続柄・関係</label>
+      <input type="text" class="form-input" id="note-next-relation" placeholder="例：妹、友人">
+    </div>
+  </div>
+
+  <div class="note-section">
+    <div class="note-section-title">📋 日常のケア情報</div>
+    <div class="form-group">
+      <label class="form-label">食事の内容・時間</label>
+      <textarea class="form-input" id="note-feeding" placeholder="例：朝7時・夜6時に〇〇フード100gずつ"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">散歩の頻度・コース</label>
+      <textarea class="form-input" id="note-walk" placeholder="例：朝晩30分、近くの公園へ"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">注意事項・禁止事項</label>
+      <textarea class="form-input" id="note-caution" placeholder="例：チョコレートNG、知らない人には吠えます"></textarea>
+    </div>
+  </div>
+
+  <div class="note-section">
+    <div class="note-section-title">💰 月々の費用目安</div>
+    <div class="form-group">
+      <label class="form-label">フード代（月）</label>
+      <input type="number" class="form-input" id="note-cost-food" placeholder="例：8000">
+    </div>
+    <div class="form-group">
+      <label class="form-label">医療費（月平均）</label>
+      <input type="number" class="form-input" id="note-cost-medical" placeholder="例：5000">
+    </div>
+    <div class="form-group">
+      <label class="form-label">その他（トリミング等）</label>
+      <input type="number" class="form-input" id="note-cost-other" placeholder="例：5000">
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="saveNote()">💾 タスキノートを保存する</button>
+  <button class="btn-secondary" onclick="shareNote()">🔗 信頼できる人に共有する</button>
+</div>
+
+<!-- SUPPORT -->
+<div class="page" id="page-support">
+  <div class="page-title">サポート情報</div>
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSubTab('support', 'info')">支援情報</button>
+    <button class="sub-tab" onclick="switchSubTab('support', 'sim')">費用試算</button>
+    <button class="sub-tab" onclick="switchSubTab('support', 'check')">準備確認</button>
+  </div>
+
+  <!-- Support Info -->
+  <div class="sub-page active" id="support-sub-info">
+    <div class="support-category">
+      <button class="cat-btn active" onclick="filterSupport('all', this)">すべて</button>
+      <button class="cat-btn" onclick="filterSupport('food', this)">🍚 フードバンク</button>
+      <button class="cat-btn" onclick="filterSupport('vet', this)">🏥 低価格病院</button>
+      <button class="cat-btn" onclick="filterSupport('foster', this)">🏠 一時預かり</button>
+      <button class="cat-btn" onclick="filterSupport('legal', this)">⚖️ 法律相談</button>
+    </div>
+
+    <div id="support-list">
+      <div class="support-card" data-cat="foster">
+        <div class="support-name">動物愛護市民団体 JCDL</div>
+        <div class="support-area">🌏 全国対応・365日・送迎あり</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">引越し・入院・育児など理由を問わず一時預かり対応</div>
+        <div class="support-links">
+          <a class="link-btn" href="https://jcdl.jp" target="_blank">🌐 サイトを見る</a>
+        </div>
+      </div>
+
+      <div class="support-card" data-cat="foster">
+        <div class="support-name">公益財団法人 日本動物愛護協会</div>
+        <div class="support-area">🌏 全国</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">ペットに関する相談・支援全般</div>
+        <div class="support-links">
+          <a class="link-btn" href="https://jspca.or.jp" target="_blank">🌐 サイトを見る</a>
+        </div>
+      </div>
+
+      <div class="support-card" data-cat="food">
+        <div class="support-name">ペットのフードバンク（地域別）</div>
+        <div class="support-area">📍 各都道府県</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">経済的に困窮した飼い主へのフード無料提供</div>
+        <div class="support-links">
+          <a class="link-btn" href="https://www.google.com/search?q=ペットフードバンク+地域" target="_blank">🔍 近くを探す</a>
+        </div>
+      </div>
+
+      <div class="support-card" data-cat="legal">
+        <div class="support-name">ペット信託対応 法律事務所</div>
+        <div class="support-area">🌏 全国（オンライン相談可）</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">飼い主が亡くなった後のペットの生活を法的に保護</div>
+        <div class="support-links">
+          <a class="link-btn" href="https://www.google.com/search?q=ペット信託+法律事務所" target="_blank">🔍 探す</a>
+        </div>
+      </div>
+
+      <div class="support-card" data-cat="foster">
+        <div class="support-name">ペットのおうち（里親マッチング）</div>
+        <div class="support-area">🌏 全国</div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">新しい飼い主を探すためのマッチングサービス</div>
+        <div class="support-links">
+          <a class="link-btn" href="https://www.pet-home.jp" target="_blank">🌐 サイトを見る</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simulator -->
+  <div class="sub-page" id="support-sub-sim">
+    <div class="card">
+      <div class="card-title">🧮 飼育費用シミュレーター</div>
+      <p style="font-size:12px;color:var(--text-light);margin-bottom:14px">飼い始める前に、10年間の費用を確認しましょう</p>
+
+      <div class="form-group">
+        <label class="form-label">種類</label>
+        <select class="form-select" id="sim-species" onchange="calcSim()">
+          <option value="dog-s">犬（小型）</option>
+          <option value="dog-m">犬（中型）</option>
+          <option value="dog-l">犬（大型）</option>
+          <option value="cat">猫</option>
+        </select>
+      </div>
+
+      <div id="sim-result" style="margin-top:16px">
+        <div class="sim-result">
+          <div class="sim-label">月々の費用目安</div>
+          <div class="sim-amount" id="sim-monthly">¥25,000</div>
+          <div style="margin-top:8px;font-size:12px;opacity:0.8">年間 <span id="sim-yearly">約300,000円</span></div>
+          <div style="font-size:12px;opacity:0.8">10年間 <span id="sim-total">約3,000,000円</span></div>
+        </div>
+
+        <div class="sim-breakdown">
+          <div class="sim-row"><span>🍚 フード代</span><span id="sim-food">月8,000円</span></div>
+          <div class="sim-row"><span>🏥 医療費</span><span id="sim-medical">月7,000円</span></div>
+          <div class="sim-row"><span>✂️ トリミング</span><span id="sim-trim">月3,000円</span></div>
+          <div class="sim-row"><span>🛡️ ペット保険</span><span id="sim-insurance">月4,000円</span></div>
+          <div class="sim-row"><span>🛒 消耗品</span><span id="sim-supplies">月3,000円</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lifecycle -->
+    <div class="card">
+      <div class="card-title">📅 ライフステージ別スケジュール</div>
+      <div class="timeline-item">
+        <div class="timeline-date">🐣 子犬・子猫期（0〜1歳）</div>
+        <div style="font-size:13px">ワクチン接種3回・去勢/避妊手術・マイクロチップ登録・しつけ教室</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">🐕 成犬・成猫期（1〜7歳）</div>
+        <div style="font-size:13px">年1回ワクチン・狂犬病予防接種（犬）・年1回健康診断・歯石除去</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">🐾 シニア期（7歳〜）</div>
+        <div style="font-size:13px">年2回健康診断・関節ケア・シニアフードへ切替・投薬管理強化</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checklist -->
+  <div class="sub-page" id="support-sub-check">
+    <div class="card">
+      <div class="card-title">✅ 飼育準備チェックリスト</div>
+      <p style="font-size:12px;color:var(--text-light);margin-bottom:14px">飼い始める前に確認しましょう</p>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="check-progress" style="width:0%"></div>
+      </div>
+      <div style="text-align:right;font-size:12px;color:var(--text-light);margin-bottom:14px" id="check-count">0 / 8 完了</div>
+
+      <div id="checklist">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div>
+            <div class="check-text">住環境の確認</div>
+            <div class="check-sub">ペット可の住居であることを確認した</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div>
+            <div class="check-text">家族全員の同意</div>
+            <div class="check-sub">同居する全員がペットを迎えることに賛成している</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div>
+            <div class="check-text">アレルギーの確認</div>
+            <div class="check-sub">家族全員がアレルギー検査または確認を済ませた</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div>
+            <div class="check-text">経済的な余裕</div>
+            <div class="check-sub">月2〜5万円の飼育費を10年以上負担できる</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div>
+            <div class="check-text">時間的な余裕</div>
+            <div class="check-sub">毎日のお世話・散歩の時間が確保できる</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div>
+            <div class="check-text">緊急時の対応者</div>
+            <div class="check-sub">自分が入院した場合に預かってくれる人がいる</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div>
+            <div class="check-text">かかりつけ病院の確認</div>
+            <div class="check-sub">近くの動物病院を調べて連絡先を把握している</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div>
+            <div class="check-text">ペット保険の検討</div>
+            <div class="check-sub">医療費の備えとしてペット保険を検討した</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="check-result" style="display:none;margin-top:16px">
+        <div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;border-radius:14px;padding:16px;text-align:center">
+          <div style="font-size:24px;margin-bottom:4px">🎉</div>
+          <div style="font-weight:700;font-size:16px">準備完了！</div>
+          <div style="font-size:12px;opacity:0.9;margin-top:4px">ペットを迎える準備が整いました</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="switchPage('home')" id="nav-home">
+    <span class="nav-icon">🏠</span>ホーム
+  </button>
+  <button class="nav-item" onclick="switchPage('sos')" id="nav-sos">
+    <span class="nav-icon">⚠️</span>SOS相談
+  </button>
+  <button class="nav-item" onclick="switchPage('pet')" id="nav-pet">
+    <span class="nav-icon">🐾</span>ペット情報
+  </button>
+  <button class="nav-item" onclick="switchPage('health')" id="nav-health">
+    <span class="nav-icon">❤️</span>健康記録
+  </button>
+  <button class="nav-item" onclick="switchPage('note')" id="nav-note">
+    <span class="nav-icon">📖</span>ノート
+  </button>
+  <button class="nav-item" onclick="switchPage('support')" id="nav-support">
+    <span class="nav-icon">🔍</span>サポート
+  </button>
+</nav>
+
+<!-- Health Input Modal -->
+<div class="modal-overlay" id="health-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('health-modal')">×</button>
+    <div class="modal-title">今日の健康記録</div>
+
+    <div class="form-group">
+      <label class="form-label">体重 (kg)</label>
+      <input type="number" class="form-input" id="h-weight" placeholder="例：5.2" step="0.1">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">食欲</label>
+      <div class="icon-selector">
+        <div class="icon-opt" onclick="selectOpt(this,'appetite','good')">
+          <span class="opt-icon">😋</span>良い
+        </div>
+        <div class="icon-opt" onclick="selectOpt(this,'appetite','normal')">
+          <span class="opt-icon">😐</span>普通
+        </div>
+        <div class="icon-opt" onclick="selectOpt(this,'appetite','bad')">
+          <span class="opt-icon">😞</span>悪い
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">運動量</label>
+      <div class="icon-selector">
+        <div class="icon-opt" onclick="selectOpt(this,'activity','good')">
+          <span class="opt-icon">🏃</span>活発
+        </div>
+        <div class="icon-opt" onclick="selectOpt(this,'activity','normal')">
+          <span class="opt-icon">🚶</span>普通
+        </div>
+        <div class="icon-opt" onclick="selectOpt(this,'activity','bad')">
+          <span class="opt-icon">😴</span>少ない
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">便の状態</label>
+      <div class="icon-selector">
+        <div class="icon-opt" onclick="selectOpt(this,'stool','good')">
+          <span class="opt-icon">✅</span>良好
+        </div>
+        <div class="icon-opt" onclick="selectOpt(this,'stool','soft')">
+          <span class="opt-icon">⚠️</span>軟便
+        </div>
+        <div class="icon-opt" onclick="selectOpt(this,'stool','bad')">
+          <span class="opt-icon">🚨</span>下痢
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">写真（最大3枚）</label>
+      <div class="photo-upload" onclick="document.getElementById('health-photo').click()">
+        📷 タップして写真を追加
+        <input type="file" id="health-photo" accept="image/*" multiple style="display:none" onchange="previewHealthPhotos(event)">
+      </div>
+      <div class="photo-preview" id="health-photo-preview"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">メモ</label>
+      <textarea class="form-input" id="h-memo" placeholder="気になったことを記録しておきましょう"></textarea>
+    </div>
+
+    <button class="btn-primary" onclick="saveHealthRecord()">💾 記録を保存する</button>
+  </div>
+</div>
+
+<script>
+// State
+let state = {
+  currentPage: 'home',
+  petProfile: JSON.parse(localStorage.getItem('tasuki-pet') || 'null'),
+  healthRecords: JSON.parse(localStorage.getItem('tasuki-health') || '[]'),
+  vaccines: JSON.parse(localStorage.getItem('tasuki-vaccines') || '[]'),
+  note: JSON.parse(localStorage.getItem('tasuki-note') || 'null'),
+  selectedOpts: { appetite: '', activity: '', stool: '' },
+  weightChart: null,
+  chartRange: 30
+};
+
+// Solutions data
+const solutions = {
+  moving: {
+    title: '引越し先がペット不可',
+    items: ['ペット可物件への引越しを検討する（ペット可物件サイトで検索）','大家さんへ交渉する（敷金増額を提案する）','ペット可になる可能性がある物件に先に申し込む','一時的に信頼できる人に預ける'],
+    orgs: [{ name: 'ペット可物件検索（SUUMO）', url: 'https://suumo.jp/chintai/soba/tokyo/kw-pet/' }, { name: '動物愛護市民団体JCDL（一時預かり）', url: 'https://jcdl.jp' }]
+  },
+  money: {
+    title: '経済的に苦しくなった',
+    items: ['ペットフードバンクを利用する（無料で食料支援）','低価格動物病院を利用する','ペット保険の見直しをする','自治体の生活支援相談窓口へ相談する'],
+    orgs: [{ name: 'ペットフードバンク（地域別）', url: 'https://www.google.com/search?q=ペットフードバンク+近く' }, { name: '低価格動物病院ネットワーク', url: 'https://www.google.com/search?q=低価格+動物病院+近く' }, { name: '社会福祉協議会', url: 'https://www.google.com/search?q=社会福祉協議会+近く' }]
+  },
+  allergy: {
+    title: '家族がアレルギーになった',
+    items: ['アレルギー専門医に相談する（軽症なら薬で対応可能なケースも）','空気清浄機の設置・こまめな掃除・ペットの部屋を分ける','アレルゲン免疫療法（減感作療法）を検討する','どうしても無理な場合は次の飼い主を探す'],
+    orgs: [{ name: 'アレルギー専門外来（検索）', url: 'https://www.google.com/search?q=アレルギー専門+外来+近く' }, { name: 'ペットのおうち（里親）', url: 'https://www.pet-home.jp' }]
+  },
+  hospital: {
+    title: '入院・介護が必要になった',
+    items: ['ペット信託を活用する（法的に安心）','一時預かりサービスを手配する','タスキノートに日常のケア情報を記録しておく','事前に次の飼い主候補を登録しておく'],
+    orgs: [{ name: '動物愛護市民団体JCDL（一時預かり）', url: 'https://jcdl.jp' }, { name: 'ペットシッターサービス（検索）', url: 'https://www.google.com/search?q=ペットシッター+近く' }, { name: 'ペット信託対応 法律事務所', url: 'https://www.google.com/search?q=ペット信託+法律事務所' }]
+  },
+  baby: {
+    title: '出産・育児で手が回らない',
+    items: ['ペットシッターを利用する','家族や友人に一時的に手伝ってもらう','育児が落ち着くまで一時預かりを利用する','生活リズムを見直してペットの時間を確保する'],
+    orgs: [{ name: 'ペットシッターサービス（検索）', url: 'https://www.google.com/search?q=ペットシッター+近く' }, { name: '動物愛護市民団体JCDL（一時預かり）', url: 'https://jcdl.jp' }]
+  },
+  different: {
+    title: '思っていた飼育と違った',
+    items: ['ドッグトレーナーや専門家に相談する','しつけ教室に通う','問題行動の原因を理解して対処法を学ぶ','どうしても無理な場合は責任ある譲渡先を探す'],
+    orgs: [{ name: 'ドッグトレーナー（検索）', url: 'https://www.google.com/search?q=ドッグトレーナー+近く' }, { name: '日本動物愛護協会', url: 'https://jspca.or.jp' }, { name: 'ペットのおうち（里親）', url: 'https://www.pet-home.jp' }]
+  },
+  other: {
+    title: 'その他のご相談',
+    items: ['まずは動物愛護団体へ相談する','獣医師や専門家へ相談する','地域の動物愛護センターへ問い合わせる','タスキのサポート情報を確認する'],
+    orgs: [{ name: '日本動物愛護協会', url: 'https://jspca.or.jp' }, { name: '動物愛護市民団体JCDL', url: 'https://jcdl.jp' }]
+  }
+};
+
+// Page switching
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+  state.currentPage = page;
+  if (page === 'home') updateHome();
+  if (page === 'health') { updateHealthTimeline(); initChart(); }
+  if (page === 'support') calcSim();
+}
+
+function switchSubTab(page, tab) {
+  const prefix = page + '-sub-';
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(p => p.classList.remove('active'));
+  document.getElementById(prefix + tab).classList.add('active');
+  const tabs = document.querySelectorAll(`#page-${page} .sub-tab`);
+  tabs.forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  if (tab === 'graph') { setTimeout(initChart, 100); }
+}
+
+// Show SOS Solution
+function showSolution(key) {
+  const sol = solutions[key];
+  const area = document.getElementById('solution-area');
+  area.innerHTML = `
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px;margin-top:12px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--text)">📋 ${sol.title}</div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">具体的な解決策</div>
+      ${sol.items.map((item, i) => `
+        <div class="solution-item">
+          <div class="solution-num">${i+1}</div>
+          <div>${item}</div>
+        </div>
+      `).join('')}
+      <div class="org-list">
+        <div class="org-title">相談先・支援団体</div>
+        ${sol.orgs.map(org => `
+          <div class="org-item">
+            <div class="org-name">${org.name}</div>
+            <a class="org-link" href="${org.url}" target="_blank">🌐 詳しく見る →</a>
+          </div>
+        `).join('')}
+      </div>
+      <div class="action-btns">
+        <button class="action-btn" onclick="switchPage('note')">📖 タスキノートを書く</button>
+        <button class="action-btn" onclick="switchPage('support')">🔍 支援を探す</button>
+      </div>
+    </div>
+  `;
+  area.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Pet Profile
+function savePetProfile() {
+  const profile = {
+    name: document.getElementById('pet-name').value,
+    species: document.getElementById('pet-species').value,
+    breed: document.getElementById('pet-breed').value,
+    age: document.getElementById('pet-age').value,
+    gender: document.getElementById('pet-gender').value,
+    personality: document.getElementById('pet-personality').value,
+    food: document.getElementById('pet-food').value,
+    fears: document.getElementById('pet-fears').value,
+    medical: document.getElementById('pet-medical').value,
+    meds: document.getElementById('pet-meds').value,
+    chip: document.getElementById('pet-chip').value,
+    vet: document.getElementById('pet-vet').value,
+    photo: state.petProfile?.photo || null
+  };
+  localStorage.setItem('tasuki-pet', JSON.stringify(profile));
+  state.petProfile = profile;
+  alert('✅ ペット情報を保存しました');
+  updateHome();
+}
+
+function setPetPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('pet-avatar-display').innerHTML = `<img src="${ev.target.result}" style="width:80px;height:80px;object-fit:cover;border-radius:50%">`;
+    if (!state.petProfile) state.petProfile = {};
+    state.petProfile.photo = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateHome() {
+  const p = state.petProfile;
+  const summaryEl = document.getElementById('pet-summary-content');
+  if (p && p.name) {
+    summaryEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:50px;height:50px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid var(--primary);overflow:hidden;flex-shrink:0">
+          ${p.photo ? `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover">` : '🐶'}
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:16px">${p.name}</div>
+          <div style="font-size:12px;color:var(--text-light)">${p.breed || ''} ${p.age ? p.age + '歳' : ''}</div>
+        </div>
+      </div>
+    `;
+  }
+  updateAlerts();
+}
+
+function updateAlerts() {
+  const alertArea = document.getElementById('alert-area');
+  alertArea.innerHTML = '';
+  // Check vaccine alerts from localStorage
+  const vaccines = JSON.parse(localStorage.getItem('tasuki-vaccines') || '[]');
+  const today = new Date();
+  vaccines.forEach(v => {
+    if (v.nextDate) {
+      const next = new Date(v.nextDate);
+      const diff = Math.ceil((next - today) / (1000 * 60 * 60 * 24));
+      if (diff <= 7 && diff >= 0) {
+        alertArea.innerHTML += `<div class="alert-banner">⚠️ ${v.name}の接種が${diff === 0 ? '今日' : diff + '日後'}です</div>`;
+      }
+    }
+  });
+}
+
+// Health Records
+function openHealthModal() {
+  state.selectedOpts = { appetite: '', activity: '', stool: '' };
+  document.getElementById('h-weight').value = '';
+  document.getElementById('h-memo').value = '';
+  document.getElementById('health-photo-preview').innerHTML = '';
+  document.querySelectorAll('.icon-opt').forEach(o => o.classList.remove('selected'));
+  document.getElementById('health-modal').classList.add('active');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function selectOpt(el, type, val) {
+  el.closest('.icon-selector').querySelectorAll('.icon-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  state.selectedOpts[type] = val;
+}
+
+function previewHealthPhotos(e) {
+  const preview = document.getElementById('health-photo-preview');
+  preview.innerHTML = '';
+  Array.from(e.target.files).slice(0, 3).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = document.createElement('img');
+      img.src = ev.target.result;
+      img.className = 'photo-thumb';
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function saveHealthRecord() {
+  const weight = parseFloat(document.getElementById('h-weight').value);
+  const memo = document.getElementById('h-memo').value;
+  const photos = Array.from(document.getElementById('health-photo-preview').querySelectorAll('img')).map(i => i.src);
+
+  const record = {
+    date: new Date().toISOString(),
+    weight: weight || null,
+    appetite: state.selectedOpts.appetite,
+    activity: state.selectedOpts.activity,
+    stool: state.selectedOpts.stool,
+    memo,
+    photos
+  };
+
+  state.healthRecords.unshift(record);
+  localStorage.setItem('tasuki-health', JSON.stringify(state.healthRecords));
+
+  // Check weight alert
+  if (state.healthRecords.length >= 2 && weight) {
+    const prev = state.healthRecords[1].weight;
+    if (prev) {
+      const change = Math.abs((weight - prev) / prev * 100);
+      if (change >= 3) {
+        setTimeout(() => alert('⚠️ 体重が前回比' + change.toFixed(1) + '%変化しています。獣医への相談をおすすめします。'), 300);
+      }
+    }
+  }
+
+  closeModal('health-modal');
+  updateHealthTimeline();
+  if (state.weightChart) initChart();
+}
+
+function updateHealthTimeline() {
+  const container = document.getElementById('health-timeline');
+  if (state.healthRecords.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>まだ記録がありません<br>今日の記録をつけましょう</p></div>`;
+    return;
+  }
+
+  const appetiteLabel = { good: '😋 食欲良好', normal: '😐 食欲普通', bad: '😞 食欲不振' };
+  const activityLabel = { good: '🏃 活発', normal: '🚶 普通', bad: '😴 活動少' };
+  const stoolLabel = { good: '✅ 便良好', soft: '⚠️ 軟便', bad: '🚨 下痢' };
+
+  container.innerHTML = state.healthRecords.slice(0, 10).map((r, i) => {
+    const prev = state.healthRecords[i + 1];
+    let weightChange = '';
+    if (r.weight && prev && prev.weight) {
+      const diff = r.weight - prev.weight;
+      if (diff > 0) weightChange = `<span class="weight-change up">▲${diff.toFixed(1)}kg</span>`;
+      else if (diff < 0) weightChange = `<span class="weight-change down">▼${Math.abs(diff).toFixed(1)}kg</span>`;
+      else weightChange = `<span class="weight-change same">変化なし</span>`;
+    }
+
+    return `
+      <div class="timeline-item">
+        <div class="timeline-date">${new Date(r.date).toLocaleDateString('ja-JP')}</div>
+        ${r.weight ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="weight-display">${r.weight}kg</span>${weightChange}</div>` : ''}
+        <div class="health-icons">
+          ${r.appetite ? `<span class="health-badge">${appetiteLabel[r.appetite]}</span>` : ''}
+          ${r.activity ? `<span class="health-badge">${activityLabel[r.activity]}</span>` : ''}
+          ${r.stool ? `<span class="health-badge">${stoolLabel[r.stool]}</span>` : ''}
+        </div>
+        ${r.photos && r.photos.length > 0 ? `<div class="photo-preview">${r.photos.map(p => `<img src="${p}" class="photo-thumb">`).join('')}</div>` : ''}
+        ${r.memo ? `<div style="font-size:12px;color:var(--text-light);margin-top:6px">📝 ${r.memo}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// Chart
+function initChart() {
+  const records = state.healthRecords.filter(r => r.weight).slice(0, state.chartRange).reverse();
+  const labels = records.map(r => new Date(r.date).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }));
+  const data = records.map(r => r.weight);
+
+  const ctx = document.getElementById('weightChart');
+  if (!ctx) return;
+
+  if (state.weightChart) state.weightChart.destroy();
+
+  const avgWeight = data.length > 0 ? data.reduce((a, b) => a + b, 0) / data.length : 5;
+
+  state.weightChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.length > 0 ? labels : ['記録なし'],
+      datasets: [
+        {
+          label: '体重(kg)',
+          data: data.length > 0 ? data : [0],
+          borderColor: '#E8845A',
+          backgroundColor: 'rgba(232,132,90,0.1)',
+          borderWidth: 2,
+          pointBackgroundColor: '#E8845A',
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: '理想体重',
+          data: labels.map(() => avgWeight),
+          borderColor: '#8B6F5E',
+          borderWidth: 1,
+          borderDash: [5, 5],
+          pointRadius: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: false, grid: { color: '#EDD9C8' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function switchChartRange(range, el) {
+  state.chartRange = range;
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  initChart();
+}
+
+// Vaccine Modal
+function openVaccineModal() {
+  const name = prompt('ワクチン名を入力してください（例：混合ワクチン5種）');
+  if (!name) return;
+  const nextDate = prompt('次回接種予定日を入力（例：2026-06-01）');
+  const vaccines = JSON.parse(localStorage.getItem('tasuki-vaccines') || '[]');
+  vaccines.push({ name, nextDate });
+  localStorage.setItem('tasuki-vaccines', JSON.stringify(vaccines));
+  state.vaccines = vaccines;
+  alert('✅ ワクチン情報を登録しました');
+  updateAlerts();
+}
+
+function openMedModal() {
+  const name = prompt('薬の名前を入力してください');
+  if (!name) return;
+  const dosage = prompt('用量・服用方法（例：1日1回1錠）');
+  const meds = JSON.parse(localStorage.getItem('tasuki-meds') || '[]');
+  meds.push({ name, dosage });
+  localStorage.setItem('tasuki-meds', JSON.stringify(meds));
+
+  const medList = document.getElementById('med-list');
+  medList.innerHTML = meds.map(m => `
+    <div class="vaccine-item">
+      <div>
+        <div class="vaccine-name">${m.name}</div>
+        <div class="vaccine-date">${m.dosage}</div>
+      </div>
+      <span class="vaccine-ok">服用中</span>
+    </div>
+  `).join('');
+}
+
+// Tasuki Note
+function saveNote() {
+  const note = {
+    message: document.getElementById('note-message').value,
+    nextOwner: document.getElementById('note-next-owner').value,
+    nextContact: document.getElementById('note-next-contact').value,
+    nextRelation: document.getElementById('note-next-relation').value,
+    feeding: document.getElementById('note-feeding').value,
+    walk: document.getElementById('note-walk').value,
+    caution: document.getElementById('note-caution').value,
+    costFood: document.getElementById('note-cost-food').value,
+    costMedical: document.getElementById('note-cost-medical').value,
+    costOther: document.getElementById('note-cost-other').value
+  };
+  localStorage.setItem('tasuki-note', JSON.stringify(note));
+  alert('✅ タスキノートを保存しました');
+}
+
+function shareNote() {
+  if (navigator.share) {
+    navigator.share({ title: 'Tasuki タスキノート', text: 'もしもの時のためのペットケア情報です', url: window.location.href });
+  } else {
+    navigator.clipboard.writeText(window.location.href).then(() => alert('URLをコピーしました。信頼できる方に共有してください。'));
+  }
+}
+
+// Support Filter
+function filterSupport(cat, el) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.support-card').forEach(card => {
+    if (cat === 'all' || card.dataset.cat === cat) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+// Simulator
+function calcSim() {
+  const species = document.getElementById('sim-species').value;
+  const costs = {
+    'dog-s': { food: 6000, medical: 6000, trim: 4000, insurance: 3000, supplies: 2000 },
+    'dog-m': { food: 9000, medical: 8000, trim: 5000, insurance: 4000, supplies: 3000 },
+    'dog-l': { food: 15000, medical: 10000, trim: 6000, insurance: 5000, supplies: 4000 },
+    'cat': { food: 5000, medical: 5000, trim: 1000, insurance: 2500, supplies: 2000 }
+  };
+  const c = costs[species];
+  const monthly = Object.values(c).reduce((a, b) => a + b, 0);
+  const yearly = monthly * 12;
+  const total = yearly * 10;
+
+  document.getElementById('sim-monthly').textContent = '¥' + monthly.toLocaleString();
+  document.getElementById('sim-yearly').textContent = '約' + yearly.toLocaleString() + '円';
+  document.getElementById('sim-total').textContent = '約' + total.toLocaleString() + '円';
+  document.getElementById('sim-food').textContent = '月' + c.food.toLocaleString() + '円';
+  document.getElementById('sim-medical').textContent = '月' + c.medical.toLocaleString() + '円';
+  document.getElementById('sim-trim').textContent = '月' + c.trim.toLocaleString() + '円';
+  document.getElementById('sim-insurance').textContent = '月' + c.insurance.toLocaleString() + '円';
+  document.getElementById('sim-supplies').textContent = '月' + c.supplies.toLocaleString() + '円';
+}
+
+// Checklist
+function toggleCheck(el) {
+  const box = el.querySelector('.check-box');
+  box.classList.toggle('checked');
+  box.innerHTML = box.classList.contains('checked') ? '✓' : '';
+  box.style.color = 'white';
+  box.style.fontSize = '14px';
+  box.style.fontWeight = '700';
+
+  const total = document.querySelectorAll('.check-item').length;
+  const done = document.querySelectorAll('.check-box.checked').length;
+  const pct = (done / total) * 100;
+
+  document.getElementById('check-progress').style.width = pct + '%';
+  document.getElementById('check-count').textContent = done + ' / ' + total + ' 完了';
+
+  if (done === total) {
+    document.getElementById('check-result').style.display = 'block';
+  } else {
+    document.getElementById('check-result').style.display = 'none';
+  }
+}
+
+// Load saved data
+function loadSavedData() {
+  const pet = state.petProfile;
+  if (pet) {
+    if (pet.name) document.getElementById('pet-name').value = pet.name;
+    if (pet.species) document.getElementById('pet-species').value = pet.species;
+    if (pet.breed) document.getElementById('pet-breed').value = pet.breed;
+    if (pet.age) document.getElementById('pet-age').value = pet.age;
+    if (pet.gender) document.getElementById('pet-gender').value = pet.gender;
+    if (pet.personality) document.getElementById('pet-personality').value = pet.personality;
+    if (pet.food) document.getElementById('pet-food').value = pet.food;
+    if (pet.fears) document.getElementById('pet-fears').value = pet.fears;
+    if (pet.medical) document.getElementById('pet-medical').value = pet.medical;
+    if (pet.meds) document.getElementById('pet-meds').value = pet.meds;
+    if (pet.chip) document.getElementById('pet-chip').value = pet.chip;
+    if (pet.vet) document.getElementById('pet-vet').value = pet.vet;
+    if (pet.photo) {
+      document.getElementById('pet-avatar-display').innerHTML = `<img src="${pet.photo}" style="width:80px;height:80px;object-fit:cover;border-radius:50%">`;
+    }
+  }
+
+  const note = state.note;
+  if (note) {
+    if (note.message) document.getElementById('note-message').value = note.message;
+    if (note.nextOwner) document.getElementById('note-next-owner').value = note.nextOwner;
+    if (note.nextContact) document.getElementById('note-next-contact').value = note.nextContact;
+    if (note.nextRelation) document.getElementById('note-next-relation').value = note.nextRelation;
+    if (note.feeding) document.getElementById('note-feeding').value = note.feeding;
+    if (note.walk) document.getElementById('note-walk').value = note.walk;
+    if (note.caution) document.getElementById('note-caution').value = note.caution;
+    if (note.costFood) document.getElementById('note-cost-food').value = note.costFood;
+    if (note.costMedical) document.getElementById('note-cost-medical').value = note.costMedical;
+    if (note.costOther) document.getElementById('note-cost-other').value = note.costOther;
+  }
+
+  updateHome();
+}
+
+// Init
+loadSavedData();
+calcSim();
+</script>
+</body>
+</html>
