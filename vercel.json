@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/app", "destination": "/tasuki-supabase.html" },
+    { "source": "/app/(.*)", "destination": "/tasuki-supabase.html" },
     { "source": "/", "destination": "/tasuki-lp.html" },
     { "source": "/(.*)", "destination": "/tasuki-supabase.html" }
   ]
