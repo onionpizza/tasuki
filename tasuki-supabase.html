@@ -792,13 +792,8 @@ async function handleLogout() {
 
 async function onLogin(user) {
   state.user = user;
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app-screen').classList.add('active');
-  await ensureProfile();
-  await loadPetProfile();
-  await loadHealthRecords();
-  updateHome();
-  calcSim();
+  // ログイン成功後、アプリのメイン画面（トップ）へリダイレクト
+  window.location.href = '/'; 
 }
 
 async function ensureProfile() {
