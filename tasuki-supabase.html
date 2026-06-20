@@ -792,8 +792,16 @@ async function handleLogout() {
 
 async function onLogin(user) {
   state.user = user;
-  // ログイン成功後、アプリのメイン画面（トップ）へリダイレクト
-  window.location.href = '/'; 
+  // 認証画面を非表示にし、アプリ画面を表示
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').classList.add('active');
+
+  // アプリの初期データロード処理を呼び出す
+  await ensureProfile();
+  await loadPetProfile();
+  await loadHealthRecords();
+  updateHome();
+  calcSim();
 }
 
 async function ensureProfile() {
