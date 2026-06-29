@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     :root {
       --primary: #E8845A;
@@ -387,6 +389,32 @@
     .plan-free { background: var(--accent); color: var(--text-light); }
     .plan-standard { background: #EBF8FF; color: #2B6CB0; }
     .plan-premium { background: #FAF5FF; color: #6B46C1; }
+
+    .lock-banner { text-align: center; padding: 14px; color: var(--text-light); font-size: 12px; background: var(--accent); border-radius: 10px; }
+    .lock-banner .lock-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+    .passport-orientation { display: flex; gap: 8px; margin-bottom: 16px; }
+
+    .passport-preview-wrap { overflow-x: auto; background: var(--accent); border-radius: 14px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: center; }
+
+    .passport-card { background: var(--white); border-radius: 14px; border: 2px solid var(--primary); overflow: hidden; font-family: 'Noto Sans JP', sans-serif; color: var(--text); flex-shrink: 0; }
+    .passport-card.passport-a4 { width: 380px; padding: 16px; }
+    .passport-card.passport-landscape { width: 480px; padding: 14px; }
+
+    .pp-header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 14px; margin-bottom: 12px; text-align: center; }
+    .pp-body { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .pp-photo { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 28px; overflow: hidden; flex-shrink: 0; }
+    .pp-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .pp-name { font-size: 18px; font-weight: 700; }
+    .pp-sub { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+    .pp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+    .pp-item { background: var(--accent); border-radius: 8px; padding: 6px 8px; }
+    .pp-item.full { grid-column: 1 / -1; }
+    .pp-label { display: block; font-size: 9px; color: var(--text-light); font-weight: 700; margin-bottom: 2px; }
+    .pp-value { display: block; font-size: 11px; word-break: break-word; }
+    .pp-section { margin-bottom: 10px; }
+    .pp-section-title { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .pp-vaccine-row { display: flex; justify-content: space-between; font-size: 11px; padding: 3px 0; border-bottom: 1px dashed var(--border); }
   </style>
 </head>
 <body>
@@ -498,6 +526,12 @@
       <div class="form-group"><label class="form-label">マイクロチップ番号</label><input type="text" class="form-input" id="pet-chip" placeholder="15桁の番号"></div>
       <div class="form-group"><label class="form-label">かかりつけ動物病院</label><input type="text" class="form-input" id="pet-vet" placeholder="例：○○動物病院（03-XXXX-XXXX）"></div>
       <button class="btn-primary" onclick="savePetProfile()">💾 保存する</button>
+    </div>
+    <div class="card">
+      <div class="card-title">🆘 緊急パスポート <span class="plan-badge" id="passport-badge" style="display:none">PREMIUM</span></div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">迷子・災害・もしもの時にすぐ見せられるペットの緊急情報カードを作成できます</p>
+      <button class="btn-primary" id="passport-btn" style="display:none" onclick="openPassportModal()">🆘 緊急パスポートを作成する</button>
+      <div class="lock-banner" id="passport-lock" style="display:none"><span class="lock-icon">🔒</span>プレミアムプランで利用可能</div>
     </div>
   </div>
 
@@ -716,6 +750,37 @@
   </div>
 </div>
 
+<!-- Emergency Passport Modal -->
+<div class="modal-overlay" id="passport-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('passport-modal')">×</button>
+    <div class="modal-title">🆘 緊急パスポート作成</div>
+
+    <div class="passport-orientation">
+      <div class="icon-opt selected" onclick="setPassportOrientation('a4', this)"><span class="opt-icon">📄</span>A4サイズ</div>
+      <div class="icon-opt" onclick="setPassportOrientation('card', this)"><span class="opt-icon">💳</span>名刺サイズ</div>
+    </div>
+
+    <div class="passport-preview-wrap">
+      <div class="passport-card passport-a4" id="passport-card-preview"></div>
+    </div>
+
+    <div class="card-title">追加情報（任意）</div>
+    <div class="form-group"><label class="form-label">血液型</label><input type="text" class="form-input" id="pp-blood" oninput="renderPassportPreview()" placeholder="例：DEA1.1陰性"></div>
+    <div class="form-group"><label class="form-label">病院の電話番号</label><input type="text" class="form-input" id="pp-hospital-phone" oninput="renderPassportPreview()" placeholder="例：03-XXXX-XXXX"></div>
+    <div class="form-group"><label class="form-label">飼い主名（緊急連絡先）</label><input type="text" class="form-input" id="pp-owner-name" oninput="renderPassportPreview()" placeholder="例：田中 太郎"></div>
+    <div class="form-group"><label class="form-label">飼い主の電話番号</label><input type="text" class="form-input" id="pp-owner-phone" oninput="renderPassportPreview()" placeholder="例：090-XXXX-XXXX"></div>
+    <div class="form-group"><label class="form-label">第2連絡先（名前）</label><input type="text" class="form-input" id="pp-second-name" oninput="renderPassportPreview()" placeholder="例：田中 花子"></div>
+    <div class="form-group"><label class="form-label">第2連絡先（電話番号）</label><input type="text" class="form-input" id="pp-second-phone" oninput="renderPassportPreview()" placeholder="例：080-XXXX-XXXX"></div>
+    <div class="form-group"><label class="form-label">預け先候補（名前）</label><input type="text" class="form-input" id="pp-foster-name" oninput="renderPassportPreview()" placeholder="例：〇〇ペットホテル"></div>
+    <div class="form-group"><label class="form-label">預け先候補（電話番号）</label><input type="text" class="form-input" id="pp-foster-phone" oninput="renderPassportPreview()" placeholder="例：03-XXXX-XXXX"></div>
+    <div class="form-group"><label class="form-label">備考</label><textarea class="form-input" id="pp-notes" oninput="renderPassportPreview()" placeholder="その他、伝えておきたいこと"></textarea></div>
+
+    <button class="btn-primary" onclick="downloadPassportPdf()">📄 PDFをダウンロード</button>
+    <button class="btn-secondary" onclick="sharePassportLine()">🔗 LINEで共有（画像）</button>
+  </div>
+</div>
+
 <script>
 // Supabase init
 const SUPABASE_URL = 'https://uyqhuuicekthybrwjpvp.supabase.co';
@@ -731,8 +796,10 @@ let state = {
   vaccines: [],
   selectedOpts: { appetite: '', activity: '', stool: '' },
   weightChart: null,
-  chartRange: 30
+  chartRange: 30,
+  userPlan: 'free'
 };
+let passportOrientation = 'a4';
 
 // Solutions
 const solutions = {
@@ -800,15 +867,29 @@ async function onLogin(user) {
   await ensureProfile();
   await loadPetProfile();
   await loadHealthRecords();
+  await loadVaccines();
   updateHome();
   calcSim();
+  updatePassportUI();
 }
 
 async function ensureProfile() {
   const { data } = await sb.from('profiles').select('*').eq('id', state.user.id).single();
   if (!data) {
     await sb.from('profiles').insert({ id: state.user.id, email: state.user.email });
+    state.userPlan = 'free';
+  } else {
+    state.userPlan = data.plan || 'free';
   }
+}
+
+function isPremium() { return state.userPlan === 'premium'; }
+
+function updatePassportUI() {
+  const prem = isPremium();
+  document.getElementById('passport-btn').style.display = prem ? 'block' : 'none';
+  document.getElementById('passport-lock').style.display = prem ? 'none' : 'block';
+  document.getElementById('passport-badge').style.display = prem ? 'none' : 'inline-block';
 }
 
 // Pet Profile
@@ -1142,6 +1223,140 @@ function toggleCheck(el) {
   document.getElementById('check-progress').style.width = (done / total * 100) + '%';
   document.getElementById('check-count').textContent = done + ' / ' + total + ' 完了';
   document.getElementById('check-result').style.display = done === total ? 'block' : 'none';
+}
+
+// Emergency Passport
+function ppVal(id) { return document.getElementById(id).value.trim(); }
+function ppDisp(v) { return v ? v : '未登録'; }
+
+async function openPassportModal() {
+  if (!isPremium()) { alert('🔒 緊急パスポート機能はプレミアムプラン（月額1,480円）でご利用いただけます'); return; }
+  if (!state.petProfile || !state.petProfile.name) { alert('まずペット情報を登録してください'); switchPage('pet'); return; }
+  if (!state.vaccines || state.vaccines.length === 0) await loadVaccines();
+  fillPassportForm();
+  renderPassportPreview();
+  document.getElementById('passport-modal').classList.add('active');
+}
+
+function fillPassportForm() {
+  const p = state.petProfile || {};
+  document.getElementById('pp-blood').value = p.blood_type || '';
+  document.getElementById('pp-hospital-phone').value = p.hospital_phone || '';
+  document.getElementById('pp-owner-name').value = p.owner_name || '';
+  document.getElementById('pp-owner-phone').value = p.owner_phone || '';
+  document.getElementById('pp-second-name').value = p.second_contact_name || '';
+  document.getElementById('pp-second-phone').value = p.second_contact_phone || '';
+  document.getElementById('pp-foster-name').value = p.foster_name || '';
+  document.getElementById('pp-foster-phone').value = p.foster_phone || '';
+  document.getElementById('pp-notes').value = p.passport_notes || '';
+}
+
+function setPassportOrientation(val, el) {
+  passportOrientation = val;
+  el.closest('.passport-orientation').querySelectorAll('.icon-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  renderPassportPreview();
+}
+
+function renderPassportPreview() {
+  const p = state.petProfile || {};
+  const latestWeight = state.healthRecords.find(r => r.weight)?.weight;
+  const speciesLabel = { dog: '犬', cat: '猫', other: 'その他' }[p.species] || '';
+  const genderLabel = { male: 'オス', female: 'メス' }[p.gender] || '';
+  const recentVaccines = (state.vaccines || []).slice(0, 3);
+  const vaccineHtml = recentVaccines.length
+    ? recentVaccines.map(v => `<div class="pp-vaccine-row"><span>${v.name}</span><span>${v.next_date ? new Date(v.next_date).toLocaleDateString('ja-JP') : '未登録'}</span></div>`).join('')
+    : '<div class="pp-vaccine-row"><span>未登録</span></div>';
+  const photo = p.photo ? `<img src="${p.photo}">` : '🐾';
+
+  const el = document.getElementById('passport-card-preview');
+  el.className = 'passport-card ' + (passportOrientation === 'card' ? 'passport-landscape' : 'passport-a4');
+  el.innerHTML = `
+    <div class="pp-header">🐾 Tasuki 緊急パスポート</div>
+    <div class="pp-body">
+      <div class="pp-photo">${photo}</div>
+      <div>
+        <div class="pp-name">${ppDisp(p.name)}</div>
+        <div class="pp-sub">${ppDisp(speciesLabel)} / ${ppDisp(p.breed)} / ${genderLabel || '未登録'} / ${p.age ? p.age + '歳' : '未登録'} / ${latestWeight ? latestWeight + 'kg' : '未登録'}</div>
+      </div>
+    </div>
+    <div class="pp-grid">
+      <div class="pp-item"><span class="pp-label">マイクロチップ</span><span class="pp-value">${ppDisp(p.chip)}</span></div>
+      <div class="pp-item"><span class="pp-label">血液型</span><span class="pp-value">${ppDisp(ppVal('pp-blood'))}</span></div>
+      <div class="pp-item"><span class="pp-label">かかりつけ病院</span><span class="pp-value">${ppDisp(p.vet)}</span></div>
+      <div class="pp-item"><span class="pp-label">病院電話番号</span><span class="pp-value">${ppDisp(ppVal('pp-hospital-phone'))}</span></div>
+      <div class="pp-item full"><span class="pp-label">既往歴・持病</span><span class="pp-value">${ppDisp(p.medical)}</span></div>
+      <div class="pp-item full"><span class="pp-label">服用薬</span><span class="pp-value">${ppDisp(p.meds)}</span></div>
+    </div>
+    <div class="pp-section">
+      <div class="pp-section-title">💉 ワクチン接種履歴（直近3件）</div>
+      ${vaccineHtml}
+    </div>
+    <div class="pp-grid">
+      <div class="pp-item"><span class="pp-label">飼い主（緊急連絡先）</span><span class="pp-value">${ppDisp(ppVal('pp-owner-name'))} ${ppDisp(ppVal('pp-owner-phone'))}</span></div>
+      <div class="pp-item"><span class="pp-label">第2連絡先</span><span class="pp-value">${ppDisp(ppVal('pp-second-name'))} ${ppDisp(ppVal('pp-second-phone'))}</span></div>
+      <div class="pp-item full"><span class="pp-label">預け先候補</span><span class="pp-value">${ppDisp(ppVal('pp-foster-name'))} ${ppDisp(ppVal('pp-foster-phone'))}</span></div>
+      <div class="pp-item full"><span class="pp-label">備考</span><span class="pp-value">${ppDisp(ppVal('pp-notes'))}</span></div>
+    </div>
+  `;
+}
+
+async function savePassportExtra() {
+  if (!state.petId) return;
+  const extra = {
+    blood_type: ppVal('pp-blood'),
+    hospital_phone: ppVal('pp-hospital-phone'),
+    owner_name: ppVal('pp-owner-name'),
+    owner_phone: ppVal('pp-owner-phone'),
+    second_contact_name: ppVal('pp-second-name'),
+    second_contact_phone: ppVal('pp-second-phone'),
+    foster_name: ppVal('pp-foster-name'),
+    foster_phone: ppVal('pp-foster-phone'),
+    passport_notes: ppVal('pp-notes')
+  };
+  try {
+    const { error } = await sb.from('pets').update(extra).eq('id', state.petId);
+    if (!error) Object.assign(state.petProfile, extra);
+  } catch (e) {
+    console.warn('緊急パスポートの追加情報を保存できませんでした', e);
+  }
+}
+
+async function downloadPassportPdf() {
+  await savePassportExtra();
+  renderPassportPreview();
+  const el = document.getElementById('passport-card-preview');
+  const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff' });
+  const imgData = canvas.toDataURL('image/png');
+  const { jsPDF } = window.jspdf;
+  const pdf = passportOrientation === 'card'
+    ? new jsPDF({ orientation: 'landscape', unit: 'mm', format: [91, 55] })
+    : new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  const ratio = Math.min(pageW / canvas.width, pageH / canvas.height);
+  const w = canvas.width * ratio;
+  const h = canvas.height * ratio;
+  pdf.addImage(imgData, 'PNG', (pageW - w) / 2, (pageH - h) / 2, w, h);
+  pdf.save(`${state.petProfile?.name || 'pet'}_緊急パスポート.pdf`);
+}
+
+async function sharePassportLine() {
+  await savePassportExtra();
+  renderPassportPreview();
+  const el = document.getElementById('passport-card-preview');
+  const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff' });
+  canvas.toBlob(async (blob) => {
+    if (!blob) return;
+    const file = new File([blob], 'emergency-passport.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'Tasuki 緊急パスポート' }); return; } catch (e) { /* fall through */ }
+    }
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url; a.download = 'emergency-passport.png'; a.click();
+    window.open('https://line.me/R/share?text=' + encodeURIComponent('ペットの緊急パスポートを作成しました🐾 #Tasuki'), '_blank');
+  });
 }
 
 // Auth state check
