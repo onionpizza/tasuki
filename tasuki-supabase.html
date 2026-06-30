@@ -396,6 +396,26 @@
     .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--primary-dark); color: white; padding: 12px 24px; border-radius: 24px; font-size: 14px; font-weight: 700; z-index: 300; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; max-width: 90%; text-align: center; }
     .toast.toast-show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    .moshimo-save-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .moshimo-save-btns .btn-primary { margin-top: 0; }
+    .moshimo-save-btns .btn-secondary { margin-top: 0; }
+
+    /* 印刷用スタイル */
+    #moshimo-print-area { display: none; }
+    @media print {
+      body > * { display: none !important; }
+      #moshimo-print-area { display: block !important; font-family: 'Noto Sans JP', sans-serif; color: #3D2B1F; padding: 20mm; }
+      .mp-header { background: #E8845A; color: white; padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 18px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .mp-section { margin-bottom: 16px; border: 1px solid #EDD9C8; border-radius: 8px; overflow: hidden; }
+      .mp-section-title { background: #F5E6D3; padding: 8px 12px; font-weight: 700; font-size: 13px; color: #E8845A; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .mp-rows { padding: 10px 12px; }
+      .mp-row { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px dashed #EDD9C8; font-size: 12px; }
+      .mp-row:last-child { border-bottom: none; }
+      .mp-label { font-weight: 700; color: #8B6F5E; min-width: 120px; flex-shrink: 0; }
+      .mp-value { color: #3D2B1F; white-space: pre-wrap; }
+      .mp-message { background: #FDF8F4; border: 1px solid #EDD9C8; border-radius: 8px; padding: 12px; font-size: 12px; white-space: pre-wrap; line-height: 1.8; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
     .passport-orientation { display: flex; gap: 8px; margin-bottom: 16px; }
 
     .passport-preview-wrap { overflow-x: auto; background: var(--accent); border-radius: 14px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: center; }
@@ -749,7 +769,11 @@
     </div>
 
     <div id="moshimo-save-bar" style="display:none;position:fixed;bottom:64px;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:10px 16px;background:var(--white);border-top:1px solid var(--border);z-index:99">
-      <button class="btn-primary" style="margin-top:0" onclick="saveMoshimoNote()">💾 もしもノートを保存する</button>
+      <div class="moshimo-save-btns">
+        <button class="btn-primary" onclick="saveMoshimoNote()">💾 保存する</button>
+        <button class="btn-secondary" onclick="printMoshimoNote()">🖨️ 印刷する</button>
+      </div>
+      <button class="btn-secondary" style="margin-top:8px" onclick="downloadMoshimoPdf()">📄 PDFでダウンロード</button>
     </div>
   </div>
 
@@ -766,6 +790,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="moshimo-print-area"></div>
 
 <!-- Health Modal -->
 <div class="modal-overlay" id="health-modal">
@@ -1350,6 +1375,104 @@ async function saveMoshimoNote() {
   } else {
     showToast('✅ もしもノートを保存しました');
   }
+}
+
+function buildMoshimoPrintHTML() {
+  const p = state.petProfile || {};
+  const g = id => document.getElementById(id)?.value || '未記入';
+  const row = (label, val) => `<div class="mp-row"><span class="mp-label">${label}</span><span class="mp-value">${val || '未記入'}</span></div>`;
+  return `
+    <div class="mp-header">
+      <span>📝 もしもノート</span>
+      <span style="font-size:12px;opacity:0.85">${p.name || 'ペット'}の引き継ぎ情報　${new Date().toLocaleDateString('ja-JP')}</span>
+    </div>
+    <div class="mp-section">
+      <div class="mp-section-title">👤 引き継ぎ先</div>
+      <div class="mp-rows">
+        ${row('氏名', g('mn-recipient-name'))}
+        ${row('続柄・関係性', g('mn-recipient-relation'))}
+        ${row('電話番号', g('mn-recipient-phone'))}
+        ${row('住所', g('mn-recipient-address'))}
+      </div>
+    </div>
+    <div class="mp-section">
+      <div class="mp-section-title">🌸 日常のルーティン</div>
+      <div class="mp-rows">
+        ${row('食事', g('mn-routine-feeding'))}
+        ${row('散歩', g('mn-routine-walk'))}
+        ${row('好き・苦手', g('mn-routine-likes'))}
+        ${row('性格・注意点', g('mn-routine-notes'))}
+      </div>
+    </div>
+    <div class="mp-section">
+      <div class="mp-section-title">🏥 医療情報</div>
+      <div class="mp-rows">
+        ${row('かかりつけ病院', p.vet || '未記入')}
+        ${row('病院電話番号', p.hospital_phone || '未記入')}
+        ${row('既往歴・持病', p.medical || '未記入')}
+        ${row('服用薬', p.meds || '未記入')}
+        ${row('保険会社', g('mn-insurance-company'))}
+        ${row('証券番号', g('mn-insurance-number'))}
+      </div>
+    </div>
+    <div class="mp-section">
+      <div class="mp-section-title">💌 飼い主からのメッセージ</div>
+      <div class="mp-rows"><div class="mp-message">${g('mn-message')}</div></div>
+    </div>
+  `;
+}
+
+function printMoshimoNote() {
+  document.getElementById('moshimo-print-area').innerHTML = buildMoshimoPrintHTML();
+  window.print();
+}
+
+async function downloadMoshimoPdf() {
+  document.getElementById('moshimo-print-area').innerHTML = buildMoshimoPrintHTML();
+  const el = document.getElementById('moshimo-print-area');
+  el.style.display = 'block';
+  el.style.position = 'fixed';
+  el.style.top = '-9999px';
+  el.style.left = '0';
+  el.style.width = '794px';
+  el.style.padding = '40px';
+  el.style.background = '#fff';
+  el.style.fontFamily = "'Noto Sans JP', sans-serif";
+  el.style.color = '#3D2B1F';
+  el.querySelectorAll('.mp-header').forEach(e => { e.style.background='#E8845A'; e.style.color='white'; e.style.padding='12px 20px'; e.style.borderRadius='8px'; e.style.fontWeight='700'; e.style.fontSize='18px'; e.style.marginBottom='16px'; e.style.display='flex'; e.style.justifyContent='space-between'; e.style.alignItems='center'; });
+  el.querySelectorAll('.mp-section').forEach(e => { e.style.marginBottom='14px'; e.style.border='1px solid #EDD9C8'; e.style.borderRadius='8px'; e.style.overflow='hidden'; });
+  el.querySelectorAll('.mp-section-title').forEach(e => { e.style.background='#F5E6D3'; e.style.padding='8px 12px'; e.style.fontWeight='700'; e.style.fontSize='13px'; e.style.color='#E8845A'; });
+  el.querySelectorAll('.mp-rows').forEach(e => { e.style.padding='10px 12px'; });
+  el.querySelectorAll('.mp-row').forEach(e => { e.style.display='flex'; e.style.gap='8px'; e.style.padding='5px 0'; e.style.borderBottom='1px dashed #EDD9C8'; e.style.fontSize='12px'; });
+  el.querySelectorAll('.mp-label').forEach(e => { e.style.fontWeight='700'; e.style.color='#8B6F5E'; e.style.minWidth='120px'; e.style.flexShrink='0'; });
+  el.querySelectorAll('.mp-message').forEach(e => { e.style.background='#FDF8F4'; e.style.border='1px solid #EDD9C8'; e.style.borderRadius='8px'; e.style.padding='12px'; e.style.fontSize='12px'; e.style.whiteSpace='pre-wrap'; e.style.lineHeight='1.8'; });
+
+  const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+  el.style.display = 'none';
+  el.style.position = '';
+  el.style.top = '';
+  el.style.left = '';
+  el.style.width = '';
+  el.style.padding = '';
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  const imgW = pageW;
+  const imgH = (canvas.height * imgW) / canvas.width;
+  let y = 0;
+  while (y < canvas.height) {
+    const sliceH = Math.min((pageH / imgW) * canvas.width, canvas.height - y);
+    const sliceCanvas = document.createElement('canvas');
+    sliceCanvas.width = canvas.width;
+    sliceCanvas.height = sliceH;
+    sliceCanvas.getContext('2d').drawImage(canvas, 0, y, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+    if (y > 0) pdf.addPage();
+    pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', 0, 0, imgW, (sliceH * imgW) / canvas.width);
+    y += sliceH;
+  }
+  pdf.save(`${state.petProfile?.name || 'pet'}_もしもノート.pdf`);
 }
 
 function showToast(msg, isError = false) {
