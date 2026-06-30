@@ -393,6 +393,9 @@
     .lock-banner { text-align: center; padding: 14px; color: var(--text-light); font-size: 12px; background: var(--accent); border-radius: 10px; }
     .lock-banner .lock-icon { font-size: 20px; display: block; margin-bottom: 4px; }
 
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--primary-dark); color: white; padding: 12px 24px; border-radius: 24px; font-size: 14px; font-weight: 700; z-index: 300; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; max-width: 90%; text-align: center; }
+    .toast.toast-show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
     .passport-orientation { display: flex; gap: 8px; margin-bottom: 16px; }
 
     .passport-preview-wrap { overflow-x: auto; background: var(--accent); border-radius: 14px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: center; }
@@ -699,16 +702,69 @@
     </div>
   </div>
 
+  <!-- もしもノート Page -->
+  <div class="page" id="page-moshimo">
+    <div class="page-title">📝 もしもノート <span class="plan-badge" id="moshimo-badge" style="display:none">PREMIUM</span></div>
+    <div class="page-subtitle">万が一の時に備えて、ペットの引き継ぎ情報をまとめておきましょう</div>
+
+    <div class="lock-banner" id="moshimo-lock" style="display:none">
+      <span class="lock-icon">🔒</span>プレミアムプランで利用可能
+      <div style="margin-top:6px;font-size:11px">プレミアムプラン（月額1,480円）でご利用いただけます</div>
+    </div>
+
+    <div id="moshimo-content" style="display:none">
+      <div class="note-section">
+        <div class="note-section-title">👤 引き継ぎ先</div>
+        <div class="form-group"><label class="form-label">氏名 *</label><input type="text" class="form-input" id="mn-recipient-name" placeholder="例：田中 花子"></div>
+        <div class="form-group"><label class="form-label">続柄・関係性</label><input type="text" class="form-input" id="mn-recipient-relation" placeholder="例：妹・友人"></div>
+        <div class="form-group"><label class="form-label">電話番号</label><input type="tel" class="form-input" id="mn-recipient-phone" placeholder="例：090-XXXX-XXXX"></div>
+        <div class="form-group"><label class="form-label">住所（任意）</label><input type="text" class="form-input" id="mn-recipient-address" placeholder="例：東京都渋谷区〇〇1-2-3"></div>
+      </div>
+
+      <div class="note-section">
+        <div class="note-section-title">🌸 日常のルーティン</div>
+        <div class="form-group"><label class="form-label">食事の時間・回数・量</label><textarea class="form-input" id="mn-routine-feeding" placeholder="例：朝7時・夜6時に〇〇フード100gずつ"></textarea></div>
+        <div class="form-group"><label class="form-label">散歩の頻度・時間帯</label><textarea class="form-input" id="mn-routine-walk" placeholder="例：朝晩30分、近くの公園へ"></textarea></div>
+        <div class="form-group"><label class="form-label">好きなこと・苦手なこと</label><textarea class="form-input" id="mn-routine-likes" placeholder="例：好き：ボール遊び　苦手：雷・掃除機"></textarea></div>
+        <div class="form-group"><label class="form-label">性格・接し方の注意点</label><textarea class="form-input" id="mn-routine-notes" placeholder="例：人懐っこいが、初対面の犬は苦手"></textarea></div>
+      </div>
+
+      <div class="note-section">
+        <div class="note-section-title">🏥 医療情報</div>
+        <div id="mn-vet-from-pet" style="background:var(--accent);border-radius:10px;padding:12px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:6px">📋 ペット情報から自動引用</div>
+          <div id="mn-vet-display" style="font-size:12px;color:var(--text)"></div>
+        </div>
+        <div class="form-group"><label class="form-label">保険会社名</label><input type="text" class="form-input" id="mn-insurance-company" placeholder="例：アニコム損保"></div>
+        <div class="form-group"><label class="form-label">保険証券番号</label><input type="text" class="form-input" id="mn-insurance-number" placeholder="例：AC-XXXXXXXXXX"></div>
+      </div>
+
+      <div class="note-section">
+        <div class="note-section-title">💌 飼い主からのメッセージ</div>
+        <textarea class="form-input" id="mn-message" placeholder="ペットへの想い、大切にしてほしいこと、次の飼い主さんへのお願いなど..." style="min-height:140px"></textarea>
+      </div>
+
+      <div style="height:80px"></div>
+    </div>
+
+    <div id="moshimo-save-bar" style="display:none;position:fixed;bottom:64px;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:10px 16px;background:var(--white);border-top:1px solid var(--border);z-index:99">
+      <button class="btn-primary" style="margin-top:0" onclick="saveMoshimoNote()">💾 もしもノートを保存する</button>
+    </div>
+  </div>
+
   <!-- Bottom Nav -->
-  <nav class="bottom-nav">
+  <nav class="bottom-nav" style="font-size:9px">
     <button class="nav-item active" onclick="switchPage('home')" id="nav-home"><span class="nav-icon">🏠</span>ホーム</button>
     <button class="nav-item" onclick="switchPage('sos')" id="nav-sos"><span class="nav-icon">⚠️</span>SOS相談</button>
     <button class="nav-item" onclick="switchPage('pet')" id="nav-pet"><span class="nav-icon">🐾</span>ペット情報</button>
     <button class="nav-item" onclick="switchPage('health')" id="nav-health"><span class="nav-icon">❤️</span>健康記録</button>
     <button class="nav-item" onclick="switchPage('note')" id="nav-note"><span class="nav-icon">📖</span>ノート</button>
+    <button class="nav-item" onclick="switchPage('moshimo')" id="nav-moshimo"><span class="nav-icon">📝</span>もしもノート</button>
     <button class="nav-item" onclick="switchPage('support')" id="nav-support"><span class="nav-icon">🔍</span>サポート</button>
   </nav>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <!-- Health Modal -->
 <div class="modal-overlay" id="health-modal">
@@ -871,6 +927,7 @@ async function onLogin(user) {
   updateHome();
   calcSim();
   updatePassportUI();
+  updateMoshimoUI();
 }
 
 async function ensureProfile() {
@@ -1182,6 +1239,7 @@ function switchPage(page) {
   document.getElementById('nav-' + page).classList.add('active');
   if (page === 'health') { updateHealthTimeline(); setTimeout(initChart, 100); loadVaccines(); }
   if (page === 'note') loadNote();
+  if (page === 'moshimo') loadMoshimoNote();
 }
 
 function switchSubTab(page, tab, el) {
@@ -1223,6 +1281,82 @@ function toggleCheck(el) {
   document.getElementById('check-progress').style.width = (done / total * 100) + '%';
   document.getElementById('check-count').textContent = done + ' / ' + total + ' 完了';
   document.getElementById('check-result').style.display = done === total ? 'block' : 'none';
+}
+
+// Moshimo Note
+function updateMoshimoUI() {
+  const prem = isPremium();
+  document.getElementById('moshimo-lock').style.display = prem ? 'none' : 'block';
+  document.getElementById('moshimo-content').style.display = prem ? 'block' : 'none';
+  document.getElementById('moshimo-save-bar').style.display = prem ? 'block' : 'none';
+  document.getElementById('moshimo-badge').style.display = prem ? 'none' : 'inline-block';
+}
+
+async function loadMoshimoNote() {
+  updateMoshimoUI();
+  if (!isPremium() || !state.user) return;
+
+  const p = state.petProfile || {};
+  const vetLines = [];
+  if (p.vet) vetLines.push(`🏥 ${p.vet}`);
+  if (p.hospital_phone) vetLines.push(`📞 ${p.hospital_phone}`);
+  if (p.medical) vetLines.push(`🩺 既往歴：${p.medical}`);
+  if (p.meds) vetLines.push(`💊 服用薬：${p.meds}`);
+  document.getElementById('mn-vet-display').innerHTML = vetLines.length
+    ? vetLines.map(l => `<div style="margin-bottom:2px">${l}</div>`).join('')
+    : '<div style="color:var(--text-light)">ペット情報に医療情報を登録してください</div>';
+
+  const { data } = await sb.from('moshimo_notes').select('*').eq('user_id', state.user.id).single();
+  if (!data) return;
+  const f = (id, val) => { if (val) document.getElementById(id).value = val; };
+  f('mn-recipient-name', data.recipient_name);
+  f('mn-recipient-relation', data.recipient_relation);
+  f('mn-recipient-phone', data.recipient_phone);
+  f('mn-recipient-address', data.recipient_address);
+  f('mn-routine-feeding', data.routine_feeding);
+  f('mn-routine-walk', data.routine_walk);
+  f('mn-routine-likes', data.routine_likes_dislikes);
+  f('mn-routine-notes', data.routine_notes);
+  f('mn-insurance-company', data.insurance_company);
+  f('mn-insurance-number', data.insurance_number);
+  f('mn-message', data.message);
+}
+
+async function saveMoshimoNote() {
+  if (!state.user) return;
+  const note = {
+    user_id: state.user.id,
+    pet_id: state.petId || null,
+    recipient_name: document.getElementById('mn-recipient-name').value,
+    recipient_relation: document.getElementById('mn-recipient-relation').value,
+    recipient_phone: document.getElementById('mn-recipient-phone').value,
+    recipient_address: document.getElementById('mn-recipient-address').value,
+    routine_feeding: document.getElementById('mn-routine-feeding').value,
+    routine_walk: document.getElementById('mn-routine-walk').value,
+    routine_likes_dislikes: document.getElementById('mn-routine-likes').value,
+    routine_notes: document.getElementById('mn-routine-notes').value,
+    insurance_company: document.getElementById('mn-insurance-company').value,
+    insurance_number: document.getElementById('mn-insurance-number').value,
+    message: document.getElementById('mn-message').value,
+    updated_at: new Date().toISOString()
+  };
+  const { data: existing } = await sb.from('moshimo_notes').select('id').eq('user_id', state.user.id).single();
+  const { error } = existing
+    ? await sb.from('moshimo_notes').update(note).eq('id', existing.id)
+    : await sb.from('moshimo_notes').insert(note);
+  if (error) {
+    showToast('⚠️ 保存に失敗しました', true);
+  } else {
+    showToast('✅ もしもノートを保存しました');
+  }
+}
+
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.background = isError ? 'var(--danger)' : 'var(--primary-dark)';
+  toast.classList.add('toast-show');
+  setTimeout(() => toast.classList.remove('toast-show'), 3000);
 }
 
 // Emergency Passport
