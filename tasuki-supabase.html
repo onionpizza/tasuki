@@ -396,6 +396,19 @@
     .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--primary-dark); color: white; padding: 12px 24px; border-radius: 24px; font-size: 14px; font-weight: 700; z-index: 300; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; max-width: 90%; text-align: center; }
     .toast.toast-show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    .sim-type-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .sim-type-btn { padding: 7px 14px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border); cursor: pointer; background: var(--white); font-family: 'Noto Sans JP', sans-serif; white-space: nowrap; transition: all 0.2s; }
+    .sim-type-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .sim-cost-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .sim-cost-label { font-size: 12px; font-weight: 700; flex: 1; }
+    .sim-cost-input { width: 110px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'Noto Sans JP', sans-serif; text-align: right; color: var(--text); background: var(--white); outline: none; }
+    .sim-cost-input:focus { border-color: var(--primary); }
+    .sim-cost-unit { font-size: 11px; color: var(--text-light); width: 36px; flex-shrink: 0; }
+    .sim-total-card { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-radius: 16px; padding: 20px; text-align: center; margin: 16px 0; }
+    .sim-total-monthly { font-size: 36px; font-weight: 700; font-family: 'Poppins', sans-serif; }
+    .sim-total-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; }
+    .sim-advice { background: #EBF8FF; border: 1px solid #BEE3F8; border-radius: 12px; padding: 14px; font-size: 13px; color: #2B6CB0; line-height: 1.6; margin-bottom: 12px; }
+
     .moshimo-save-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .moshimo-save-btns .btn-primary { margin-top: 0; }
     .moshimo-save-btns .btn-secondary { margin-top: 0; }
@@ -512,7 +525,8 @@
       <div class="quick-item" onclick="switchPage('note')"><div class="icon">📖</div><div class="label">タスキノートを書く</div><div class="sub">大切な想いを残す</div></div>
       <div class="quick-item" onclick="switchPage('pet')"><div class="icon">🐶</div><div class="label">ペット情報を編集</div><div class="sub">プロフィール管理</div></div>
       <div class="quick-item" onclick="switchPage('moshimo')"><div class="icon">📝</div><div class="label">もしもノート</div><div class="sub">引き継ぎ情報を残す</div></div>
-      <div class="quick-item" onclick="switchPage('support')"><div class="icon">🔍</div><div class="label">サポートを探す</div><div class="sub">支援情報・シミュレーター</div></div>
+      <div class="quick-item" onclick="switchPage('sim')"><div class="icon">🧮</div><div class="label">費用シミュレーター</div><div class="sub">年間費用を試算する</div></div>
+      <div class="quick-item" onclick="switchPage('support')"><div class="icon">🔍</div><div class="label">サポートを探す</div><div class="sub">支援情報・サポート</div></div>
     </div>
   </div>
 
@@ -720,6 +734,88 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- 費用シミュレーター Page -->
+  <div class="page" id="page-sim">
+    <div class="page-title">🧮 費用シミュレーター <span class="plan-badge" id="sim-badge" style="display:none">STANDARD+</span></div>
+    <div class="page-subtitle">ペットの種類と年齢から、費用の目安を自動推計します</div>
+
+    <div class="lock-banner" id="sim-lock" style="display:none">
+      <span class="lock-icon">🔒</span>スタンダードプラン以上で利用可能
+      <div style="margin-top:6px;font-size:11px">スタンダードプラン（月額980円）にアップグレードしてご利用ください</div>
+    </div>
+
+    <div id="sim-content" style="display:none">
+      <div class="note-section">
+        <div class="note-section-title">🐾 ペットの種類</div>
+        <div class="sim-type-btns" id="sim-type-btns">
+          <button class="sim-type-btn active" data-val="dog-s" onclick="selectSimType('dog-s')">犬（小型）</button>
+          <button class="sim-type-btn" data-val="dog-m" onclick="selectSimType('dog-m')">犬（中型）</button>
+          <button class="sim-type-btn" data-val="dog-l" onclick="selectSimType('dog-l')">犬（大型）</button>
+          <button class="sim-type-btn" data-val="cat" onclick="selectSimType('cat')">猫</button>
+          <button class="sim-type-btn" data-val="other" onclick="selectSimType('other')">その他</button>
+        </div>
+      </div>
+
+      <div class="note-section">
+        <div class="note-section-title">📅 年齢</div>
+        <div class="sim-type-btns" id="sim-age-btns">
+          <button class="sim-type-btn" data-val="young" onclick="selectSimAge('young')">子（0〜2歳）</button>
+          <button class="sim-type-btn active" data-val="adult" onclick="selectSimAge('adult')">成（3〜7歳）</button>
+          <button class="sim-type-btn" data-val="senior" onclick="selectSimAge('senior')">シニア（8歳〜）</button>
+        </div>
+      </div>
+
+      <div class="note-section">
+        <div class="note-section-title">💰 費用項目（推計値・手動上書き可）</div>
+        <div class="sim-cost-row">
+          <span class="sim-cost-label">🍚 フード代</span>
+          <input type="number" class="sim-cost-input" id="sim-food" oninput="calcSimTotal()">
+          <span class="sim-cost-unit">円/月</span>
+        </div>
+        <div class="sim-cost-row">
+          <span class="sim-cost-label">🏥 医療費・ワクチン</span>
+          <input type="number" class="sim-cost-input" id="sim-medical" oninput="calcSimTotal()">
+          <span class="sim-cost-unit">円/年</span>
+        </div>
+        <div class="sim-cost-row">
+          <span class="sim-cost-label">🛡️ ペット保険料</span>
+          <input type="number" class="sim-cost-input" id="sim-insurance" oninput="calcSimTotal()">
+          <span class="sim-cost-unit">円/月</span>
+        </div>
+        <div class="sim-cost-row">
+          <span class="sim-cost-label">🛒 グッズ・消耗品</span>
+          <input type="number" class="sim-cost-input" id="sim-goods" oninput="calcSimTotal()">
+          <span class="sim-cost-unit">円/月</span>
+        </div>
+        <div class="sim-cost-row" id="sim-trimming-row">
+          <span class="sim-cost-label">✂️ トリミング</span>
+          <input type="number" class="sim-cost-input" id="sim-trimming" oninput="calcSimTotal()">
+          <span class="sim-cost-unit">円/月</span>
+        </div>
+        <div class="sim-cost-row">
+          <span class="sim-cost-label">📦 その他</span>
+          <input type="number" class="sim-cost-input" id="sim-other" value="0" oninput="calcSimTotal()">
+          <span class="sim-cost-unit">円/月</span>
+        </div>
+      </div>
+
+      <div class="sim-total-card">
+        <div class="sim-total-label">月間費用合計</div>
+        <div class="sim-total-monthly" id="sim-total-monthly">¥0</div>
+        <div style="margin-top:8px;font-size:13px;opacity:0.9" id="sim-total-yearly">年間 約¥0</div>
+      </div>
+
+      <div class="sim-advice">💡 <span id="sim-advice-text"></span></div>
+      <a class="btn-secondary" id="sim-affiliate-btn" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-bottom:16px">🔗 ペット保険を比較する →</a>
+
+      <div style="height:80px"></div>
+    </div>
+
+    <div id="sim-save-bar" style="display:none;position:fixed;bottom:64px;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:10px 16px;background:var(--white);border-top:1px solid var(--border);z-index:99">
+      <button class="btn-primary" style="margin-top:0" onclick="saveSimResult()">💾 シミュレーション結果を保存</button>
     </div>
   </div>
 
@@ -954,6 +1050,7 @@ async function onLogin(user) {
   calcSim();
   updatePassportUI();
   updateMoshimoUI();
+  updateSimUI();
 }
 
 async function ensureProfile() {
@@ -1266,6 +1363,7 @@ function switchPage(page) {
   if (page === 'health') { updateHealthTimeline(); setTimeout(initChart, 100); loadVaccines(); }
   if (page === 'note') loadNote();
   if (page === 'moshimo') loadMoshimoNote();
+  if (page === 'sim') initSim();
 }
 
 function switchSubTab(page, tab, el) {
@@ -1307,6 +1405,127 @@ function toggleCheck(el) {
   document.getElementById('check-progress').style.width = (done / total * 100) + '%';
   document.getElementById('check-count').textContent = done + ' / ' + total + ' 完了';
   document.getElementById('check-result').style.display = done === total ? 'block' : 'none';
+}
+
+// Cost Simulator
+const AFFILIATE_URL = 'https://example.com/pet-insurance'; // ← アフィリリンクはここを変更
+
+const SIM_COSTS = {
+  'dog-s': {
+    young:  { food: 5000, medical: 80000, insurance: 3000, goods: 3000, trimming: 5000 },
+    adult:  { food: 5000, medical: 50000, insurance: 3500, goods: 2000, trimming: 5000 },
+    senior: { food: 6000, medical: 100000, insurance: 5000, goods: 2000, trimming: 5000 }
+  },
+  'dog-m': {
+    young:  { food: 7000, medical: 90000,  insurance: 3500, goods: 3000, trimming: 7000 },
+    adult:  { food: 8000, medical: 60000,  insurance: 4000, goods: 3000, trimming: 7000 },
+    senior: { food: 9000, medical: 120000, insurance: 6000, goods: 3000, trimming: 7000 }
+  },
+  'dog-l': {
+    young:  { food: 12000, medical: 100000, insurance: 4000, goods: 4000, trimming: 8000 },
+    adult:  { food: 13000, medical: 70000,  insurance: 5000, goods: 4000, trimming: 8000 },
+    senior: { food: 14000, medical: 140000, insurance: 7000, goods: 4000, trimming: 8000 }
+  },
+  'cat': {
+    young:  { food: 3000, medical: 70000, insurance: 2000, goods: 2500, trimming: 0 },
+    adult:  { food: 4000, medical: 40000, insurance: 2500, goods: 2000, trimming: 0 },
+    senior: { food: 5000, medical: 80000, insurance: 4000, goods: 2500, trimming: 0 }
+  },
+  'other': {
+    young:  { food: 3000, medical: 30000, insurance: 0, goods: 2000, trimming: 0 },
+    adult:  { food: 3000, medical: 30000, insurance: 0, goods: 2000, trimming: 0 },
+    senior: { food: 3500, medical: 50000, insurance: 0, goods: 2000, trimming: 0 }
+  }
+};
+
+let simState = { type: 'dog-s', age: 'adult' };
+
+function isStandardOrAbove() {
+  return state.userPlan === 'standard' || state.userPlan === 'premium';
+}
+
+function updateSimUI() {
+  const ok = isStandardOrAbove();
+  document.getElementById('sim-lock').style.display = ok ? 'none' : 'block';
+  document.getElementById('sim-content').style.display = ok ? 'block' : 'none';
+  document.getElementById('sim-save-bar').style.display = ok ? 'block' : 'none';
+  document.getElementById('sim-badge').style.display = ok ? 'none' : 'inline-block';
+}
+
+function selectSimType(type) {
+  simState.type = type;
+  document.querySelectorAll('#sim-type-btns .sim-type-btn').forEach(b => b.classList.toggle('active', b.dataset.val === type));
+  const isDog = type.startsWith('dog');
+  document.getElementById('sim-trimming-row').style.display = isDog ? 'flex' : 'none';
+  fillSimDefaults();
+}
+
+function selectSimAge(age) {
+  simState.age = age;
+  document.querySelectorAll('#sim-age-btns .sim-type-btn').forEach(b => b.classList.toggle('active', b.dataset.val === age));
+  fillSimDefaults();
+}
+
+function fillSimDefaults() {
+  const c = SIM_COSTS[simState.type]?.[simState.age];
+  if (!c) return;
+  document.getElementById('sim-food').value = c.food;
+  document.getElementById('sim-medical').value = c.medical;
+  document.getElementById('sim-insurance').value = c.insurance;
+  document.getElementById('sim-goods').value = c.goods;
+  document.getElementById('sim-trimming').value = c.trimming;
+  calcSimTotal();
+}
+
+function calcSimTotal() {
+  const n = id => parseInt(document.getElementById(id)?.value) || 0;
+  const isDog = simState.type.startsWith('dog');
+  const monthly = n('sim-food')
+    + Math.round(n('sim-medical') / 12)
+    + n('sim-insurance')
+    + n('sim-goods')
+    + (isDog ? n('sim-trimming') : 0)
+    + n('sim-other');
+  const yearly = monthly * 12;
+  document.getElementById('sim-total-monthly').textContent = '¥' + monthly.toLocaleString();
+  document.getElementById('sim-total-yearly').textContent = '年間 約¥' + yearly.toLocaleString();
+  const saving = Math.round(n('sim-medical') * 0.7);
+  document.getElementById('sim-advice-text').textContent =
+    `ペット保険に加入すると、医療費の最大70%が補償され、年間 約${saving.toLocaleString()}円 の自己負担軽減になる可能性があります。`;
+}
+
+function initSim() {
+  updateSimUI();
+  if (!isStandardOrAbove()) return;
+  document.getElementById('sim-affiliate-btn').href = AFFILIATE_URL;
+  selectSimType(simState.type);
+  selectSimAge(simState.age);
+}
+
+async function saveSimResult() {
+  if (!state.user) return;
+  const n = id => parseInt(document.getElementById(id)?.value) || 0;
+  const monthly = parseInt(document.getElementById('sim-total-monthly').textContent.replace(/[¥,]/g, '')) || 0;
+  try {
+    const { error } = await sb.from('cost_simulations').insert({
+      user_id: state.user.id,
+      pet_id: state.petId || null,
+      pet_type: simState.type,
+      pet_age: simState.age,
+      food_monthly: n('sim-food'),
+      medical_yearly: n('sim-medical'),
+      insurance_monthly: n('sim-insurance'),
+      goods_monthly: n('sim-goods'),
+      trimming_monthly: n('sim-trimming'),
+      other_monthly: n('sim-other'),
+      total_monthly: monthly,
+      total_yearly: monthly * 12
+    });
+    if (error) throw error;
+    showToast('✅ シミュレーション結果を保存しました');
+  } catch (e) {
+    showToast('⚠️ 保存に失敗しました', true);
+  }
 }
 
 // Moshimo Note
