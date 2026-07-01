@@ -772,43 +772,43 @@
         <div class="note-section-title">💰 費用項目（推計値・手動上書き可）</div>
         <div class="sim-cost-row">
           <span class="sim-cost-label">🍚 フード代</span>
-          <input type="number" class="sim-cost-input" id="sim-food" oninput="calcSimTotal()">
+          <input type="number" class="sim-cost-input" id="csim-food" oninput="calcSimTotal()">
           <span class="sim-cost-unit">円/月</span>
         </div>
         <div class="sim-cost-row">
           <span class="sim-cost-label">🏥 医療費・ワクチン</span>
-          <input type="number" class="sim-cost-input" id="sim-medical" oninput="calcSimTotal()">
+          <input type="number" class="sim-cost-input" id="csim-medical" oninput="calcSimTotal()">
           <span class="sim-cost-unit">円/年</span>
         </div>
         <div class="sim-cost-row">
           <span class="sim-cost-label">🛡️ ペット保険料</span>
-          <input type="number" class="sim-cost-input" id="sim-insurance" oninput="calcSimTotal()">
+          <input type="number" class="sim-cost-input" id="csim-insurance" oninput="calcSimTotal()">
           <span class="sim-cost-unit">円/月</span>
         </div>
         <div class="sim-cost-row">
           <span class="sim-cost-label">🛒 グッズ・消耗品</span>
-          <input type="number" class="sim-cost-input" id="sim-goods" oninput="calcSimTotal()">
+          <input type="number" class="sim-cost-input" id="csim-goods" oninput="calcSimTotal()">
           <span class="sim-cost-unit">円/月</span>
         </div>
         <div class="sim-cost-row" id="sim-trimming-row">
           <span class="sim-cost-label">✂️ トリミング</span>
-          <input type="number" class="sim-cost-input" id="sim-trimming" oninput="calcSimTotal()">
+          <input type="number" class="sim-cost-input" id="csim-trimming" oninput="calcSimTotal()">
           <span class="sim-cost-unit">円/月</span>
         </div>
         <div class="sim-cost-row">
           <span class="sim-cost-label">📦 その他</span>
-          <input type="number" class="sim-cost-input" id="sim-other" value="0" oninput="calcSimTotal()">
+          <input type="number" class="sim-cost-input" id="csim-other" value="0" oninput="calcSimTotal()">
           <span class="sim-cost-unit">円/月</span>
         </div>
       </div>
 
       <div class="sim-total-card">
         <div class="sim-total-label">月間費用合計</div>
-        <div class="sim-total-monthly" id="sim-total-monthly">¥0</div>
-        <div style="margin-top:8px;font-size:13px;opacity:0.9" id="sim-total-yearly">年間 約¥0</div>
+        <div class="sim-total-monthly" id="csim-total-monthly">¥0</div>
+        <div style="margin-top:8px;font-size:13px;opacity:0.9" id="csim-total-yearly">年間 約¥0</div>
       </div>
 
-      <div class="sim-advice">💡 <span id="sim-advice-text"></span></div>
+      <div class="sim-advice">💡 <span id="csim-advice-text"></span></div>
       <a class="btn-secondary" id="sim-affiliate-btn" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-bottom:16px">🔗 ペット保険を比較する →</a>
 
       <div style="height:80px"></div>
@@ -1469,28 +1469,28 @@ function selectSimAge(age) {
 function fillSimDefaults() {
   const c = SIM_COSTS[simState.type]?.[simState.age];
   if (!c) return;
-  document.getElementById('sim-food').value = c.food;
-  document.getElementById('sim-medical').value = c.medical;
-  document.getElementById('sim-insurance').value = c.insurance;
-  document.getElementById('sim-goods').value = c.goods;
-  document.getElementById('sim-trimming').value = c.trimming;
+  document.getElementById('csim-food').value = c.food;
+  document.getElementById('csim-medical').value = c.medical;
+  document.getElementById('csim-insurance').value = c.insurance;
+  document.getElementById('csim-goods').value = c.goods;
+  document.getElementById('csim-trimming').value = c.trimming;
   calcSimTotal();
 }
 
 function calcSimTotal() {
   const n = id => parseInt(document.getElementById(id)?.value) || 0;
   const isDog = simState.type.startsWith('dog');
-  const monthly = n('sim-food')
-    + Math.round(n('sim-medical') / 12)
-    + n('sim-insurance')
-    + n('sim-goods')
-    + (isDog ? n('sim-trimming') : 0)
-    + n('sim-other');
+  const monthly = n('csim-food')
+    + Math.round(n('csim-medical') / 12)
+    + n('csim-insurance')
+    + n('csim-goods')
+    + (isDog ? n('csim-trimming') : 0)
+    + n('csim-other');
   const yearly = monthly * 12;
-  document.getElementById('sim-total-monthly').textContent = '¥' + monthly.toLocaleString();
-  document.getElementById('sim-total-yearly').textContent = '年間 約¥' + yearly.toLocaleString();
-  const saving = Math.round(n('sim-medical') * 0.7);
-  document.getElementById('sim-advice-text').textContent =
+  document.getElementById('csim-total-monthly').textContent = '¥' + monthly.toLocaleString();
+  document.getElementById('csim-total-yearly').textContent = '年間 約¥' + yearly.toLocaleString();
+  const saving = Math.round(n('csim-medical') * 0.7);
+  document.getElementById('csim-advice-text').textContent =
     `ペット保険に加入すると、医療費の最大70%が補償され、年間 約${saving.toLocaleString()}円 の自己負担軽減になる可能性があります。`;
 }
 
@@ -1505,19 +1505,19 @@ function initSim() {
 async function saveSimResult() {
   if (!state.user) return;
   const n = id => parseInt(document.getElementById(id)?.value) || 0;
-  const monthly = parseInt(document.getElementById('sim-total-monthly').textContent.replace(/[¥,]/g, '')) || 0;
+  const monthly = parseInt(document.getElementById('csim-total-monthly').textContent.replace(/[¥,]/g, '')) || 0;
   try {
     const { error } = await sb.from('cost_simulations').insert({
       user_id: state.user.id,
       pet_id: state.petId || null,
       pet_type: simState.type,
       pet_age: simState.age,
-      food_monthly: n('sim-food'),
-      medical_yearly: n('sim-medical'),
-      insurance_monthly: n('sim-insurance'),
-      goods_monthly: n('sim-goods'),
-      trimming_monthly: n('sim-trimming'),
-      other_monthly: n('sim-other'),
+      food_monthly: n('csim-food'),
+      medical_yearly: n('csim-medical'),
+      insurance_monthly: n('csim-insurance'),
+      goods_monthly: n('csim-goods'),
+      trimming_monthly: n('csim-trimming'),
+      other_monthly: n('csim-other'),
       total_monthly: monthly,
       total_yearly: monthly * 12
     });
