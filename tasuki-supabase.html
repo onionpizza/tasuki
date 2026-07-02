@@ -408,6 +408,16 @@
     .sim-total-monthly { font-size: 36px; font-weight: 700; font-family: 'Poppins', sans-serif; }
     .sim-total-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; }
     .sim-advice { background: #EBF8FF; border: 1px solid #BEE3F8; border-radius: 12px; padding: 14px; font-size: 13px; color: #2B6CB0; line-height: 1.6; margin-bottom: 12px; }
+    .sim-action-btn { display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; text-decoration: none; transition: opacity 0.2s; }
+    .sim-action-btn:active { opacity: 0.8; }
+    .sim-action-orange { background: linear-gradient(135deg, #E8845A, #C86A40); color: white; }
+    .sim-action-green  { background: linear-gradient(135deg, #38A169, #276749); color: white; }
+    .sim-action-blue   { background: linear-gradient(135deg, #3182CE, #2B6CB0); color: white; }
+    .sim-action-icon { font-size: 24px; flex-shrink: 0; }
+    .sim-action-body { display: flex; flex-direction: column; flex: 1; }
+    .sim-action-main { font-size: 13px; font-weight: 700; }
+    .sim-action-sub  { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+    .sim-action-arrow { font-size: 20px; opacity: 0.7; flex-shrink: 0; }
 
     .moshimo-save-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .moshimo-save-btns .btn-primary { margin-top: 0; }
@@ -810,6 +820,34 @@
 
       <div class="sim-advice">💡 <span id="csim-advice-text"></span></div>
       <a class="btn-secondary" id="sim-affiliate-btn" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-bottom:16px">🔗 ペット保険を比較する →</a>
+
+      <div class="note-section">
+        <div class="note-section-title">💡 医療費を下げるためにできること</div>
+        <a class="sim-action-btn sim-action-orange" href="https://lit.link/e01698dd-84a0-4d9b-9722-fb90917b9026" target="_blank" rel="noopener">
+          <span class="sim-action-icon">🥩</span>
+          <span class="sim-action-body">
+            <span class="sim-action-main">フード代を見直して医療費を削減する</span>
+            <span class="sim-action-sub">プレミアムフード10選を見る</span>
+          </span>
+          <span class="sim-action-arrow">›</span>
+        </a>
+        <a class="sim-action-btn sim-action-green" href="https://lit.link/e01698dd-84a0-4d9b-9722-fb90917b9026" target="_blank" rel="noopener">
+          <span class="sim-action-icon">💊</span>
+          <span class="sim-action-body">
+            <span class="sim-action-main">関節・健康ケアで医療費を予防する</span>
+            <span class="sim-action-sub">サプリ・健康グッズを見る</span>
+          </span>
+          <span class="sim-action-arrow">›</span>
+        </a>
+        <a class="sim-action-btn sim-action-blue" href="https://lit.link/e01698dd-84a0-4d9b-9722-fb90917b9026" target="_blank" rel="noopener">
+          <span class="sim-action-icon">🦷</span>
+          <span class="sim-action-body">
+            <span class="sim-action-main">デンタルケアで歯周病を予防する</span>
+            <span class="sim-action-sub">デンタルグッズを見る</span>
+          </span>
+          <span class="sim-action-arrow">›</span>
+        </a>
+      </div>
 
       <div style="height:80px"></div>
     </div>
