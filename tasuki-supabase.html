@@ -413,6 +413,13 @@
     .sim-action-orange { background: linear-gradient(135deg, #E8845A, #C86A40); color: white; }
     .sim-action-green  { background: linear-gradient(135deg, #38A169, #276749); color: white; }
     .sim-action-blue   { background: linear-gradient(135deg, #3182CE, #2B6CB0); color: white; }
+
+    .family-member-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--accent); border-radius: 10px; margin-bottom: 8px; }
+    .family-member-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .family-member-info { flex: 1; overflow: hidden; }
+    .family-member-email { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .family-member-role { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+    .family-remove-btn { background: none; border: 1px solid var(--danger); color: var(--danger); border-radius: 8px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; flex-shrink: 0; }
     .sim-action-icon { font-size: 24px; flex-shrink: 0; }
     .sim-action-body { display: flex; flex-direction: column; flex: 1; }
     .sim-action-main { font-size: 13px; font-weight: 700; }
@@ -536,6 +543,7 @@
       <div class="quick-item" onclick="switchPage('pet')"><div class="icon">🐶</div><div class="label">ペット情報を編集</div><div class="sub">プロフィール管理</div></div>
       <div class="quick-item" onclick="switchPage('moshimo')"><div class="icon">📝</div><div class="label">もしもノート</div><div class="sub">引き継ぎ情報を残す</div></div>
       <div class="quick-item" onclick="switchPage('sim')"><div class="icon">🧮</div><div class="label">費用シミュレーター</div><div class="sub">年間費用を試算する</div></div>
+      <div class="quick-item" onclick="switchPage('family')"><div class="icon">👨‍👩‍👧</div><div class="label">家族共有</div><div class="sub">家族でペット情報を共有</div></div>
       <div class="quick-item" onclick="switchPage('support')"><div class="icon">🔍</div><div class="label">サポートを探す</div><div class="sub">支援情報・サポート</div></div>
     </div>
   </div>
@@ -857,6 +865,59 @@
     </div>
   </div>
 
+  <!-- 家族共有 Page -->
+  <div class="page" id="page-family">
+    <div class="page-title">👨‍👩‍👧 家族共有 <span class="plan-badge" id="family-badge" style="display:none">STANDARD+</span></div>
+    <div class="page-subtitle">家族みんなでペット情報を共有・管理できます</div>
+
+    <div class="lock-banner" id="family-lock" style="display:none">
+      <span class="lock-icon">🔒</span>スタンダードプラン以上で利用可能
+      <div style="margin-top:6px;font-size:11px">スタンダードプラン（月額980円）にアップグレードしてご利用ください</div>
+    </div>
+
+    <div id="family-content" style="display:none">
+      <div class="note-section">
+        <div class="note-section-title">🏠 グループ名</div>
+        <div id="family-no-group">
+          <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">まだグループが作成されていません。グループを作成して家族を招待しましょう。</p>
+          <div class="form-group"><label class="form-label">グループ名</label><input type="text" class="form-input" id="family-group-name" placeholder="例：渡邉家"></div>
+          <button class="btn-primary" onclick="createFamilyGroup()">👨‍👩‍👧 グループを作成する</button>
+        </div>
+        <div id="family-has-group" style="display:none">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="text" class="form-input" id="family-group-name-edit" style="flex:1">
+            <button class="add-btn" id="family-save-name-btn" onclick="saveFamilyGroupName()" style="display:none">保存</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="note-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="note-section-title" style="margin:0">👤 メンバー</div>
+          <span id="family-member-count" style="font-size:11px;color:var(--text-light)"></span>
+        </div>
+        <div id="family-members-list"></div>
+      </div>
+
+      <div id="family-invite-section" style="display:none">
+        <div class="note-section">
+          <div class="note-section-title">🔗 招待リンク</div>
+          <p style="font-size:12px;color:var(--text-light);margin-bottom:12px">リンクをLINEなどで家族に送ってください。有効期限は24時間です。</p>
+          <button class="btn-primary" onclick="generateInviteLink()">🔗 招待リンクを発行する</button>
+          <div id="family-invite-result" style="display:none;margin-top:12px">
+            <div style="background:var(--accent);border-radius:10px;padding:12px">
+              <div style="font-size:11px;color:var(--text-light);margin-bottom:6px">招待URL（24時間有効）</div>
+              <div id="family-invite-url" style="font-size:12px;word-break:break-all;color:var(--text);margin-bottom:8px"></div>
+              <button class="btn-secondary" style="margin-top:0" onclick="copyInviteLink()">📋 URLをコピー</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:24px"></div>
+    </div>
+  </div>
+
   <!-- もしもノート Page -->
   <div class="page" id="page-moshimo">
     <div class="page-title">📝 もしもノート <span class="plan-badge" id="moshimo-badge" style="display:none">PREMIUM</span></div>
@@ -1013,7 +1074,10 @@ let state = {
   selectedOpts: { appetite: '', activity: '', stool: '' },
   weightChart: null,
   chartRange: 30,
-  userPlan: 'free'
+  userPlan: 'free',
+  familyGroup: null,
+  familyRole: null,
+  familyMembers: []
 };
 let passportOrientation = 'a4';
 
@@ -1089,6 +1153,10 @@ async function onLogin(user) {
   updatePassportUI();
   updateMoshimoUI();
   updateSimUI();
+  updateFamilyUI();
+  // 招待トークン処理
+  const _inviteToken = new URLSearchParams(window.location.search).get('invite') || localStorage.getItem('pendingInviteToken');
+  if (_inviteToken) await handleInviteToken(_inviteToken);
 }
 
 async function ensureProfile() {
@@ -1402,6 +1470,7 @@ function switchPage(page) {
   if (page === 'note') loadNote();
   if (page === 'moshimo') loadMoshimoNote();
   if (page === 'sim') initSim();
+  if (page === 'family') loadFamilyPage();
 }
 
 function switchSubTab(page, tab, el) {
@@ -1443,6 +1512,195 @@ function toggleCheck(el) {
   document.getElementById('check-progress').style.width = (done / total * 100) + '%';
   document.getElementById('check-count').textContent = done + ' / ' + total + ' 完了';
   document.getElementById('check-result').style.display = done === total ? 'block' : 'none';
+}
+
+// Family Sharing
+function updateFamilyUI() {
+  const ok = isStandardOrAbove();
+  document.getElementById('family-lock').style.display = ok ? 'none' : 'block';
+  document.getElementById('family-content').style.display = ok ? 'block' : 'none';
+  document.getElementById('family-badge').style.display = ok ? 'none' : 'inline-block';
+}
+
+function maxFamilyMembers() { return isPremium() ? 5 : 3; }
+
+async function loadFamilyPage() {
+  updateFamilyUI();
+  if (!isStandardOrAbove() || !state.user) return;
+
+  const { data: memberRow } = await sb
+    .from('family_members')
+    .select('role, group_id, family_groups(id, name, owner_id)')
+    .eq('user_id', state.user.id)
+    .maybeSingle();
+
+  if (memberRow) {
+    state.familyGroup = memberRow.family_groups;
+    state.familyRole = memberRow.role;
+    showFamilyGroupPanel(memberRow.family_groups);
+    await loadFamilyMembers(memberRow.group_id);
+  } else {
+    showFamilyNoGroupPanel();
+  }
+}
+
+function showFamilyNoGroupPanel() {
+  document.getElementById('family-no-group').style.display = 'block';
+  document.getElementById('family-has-group').style.display = 'none';
+  document.getElementById('family-invite-section').style.display = 'none';
+  document.getElementById('family-members-list').innerHTML = '';
+  document.getElementById('family-member-count').textContent = '';
+}
+
+function showFamilyGroupPanel(group) {
+  document.getElementById('family-no-group').style.display = 'none';
+  document.getElementById('family-has-group').style.display = 'block';
+  const nameEdit = document.getElementById('family-group-name-edit');
+  nameEdit.value = group.name || '';
+  const isAdmin = state.familyRole === 'admin';
+  nameEdit.readOnly = !isAdmin;
+  document.getElementById('family-save-name-btn').style.display = isAdmin ? 'inline-block' : 'none';
+  document.getElementById('family-invite-section').style.display = isAdmin ? 'block' : 'none';
+}
+
+async function loadFamilyMembers(groupId) {
+  const { data: members } = await sb
+    .from('family_members')
+    .select('id, user_id, role')
+    .eq('group_id', groupId);
+  if (!members) return;
+
+  const userIds = members.map(m => m.user_id);
+  const { data: profs } = await sb.from('profiles').select('id, email').in('id', userIds);
+  const emailMap = {};
+  if (profs) profs.forEach(p => { emailMap[p.id] = p.email; });
+
+  state.familyMembers = members.map(m => ({ ...m, email: emailMap[m.user_id] || m.user_id }));
+  renderFamilyMembers(state.familyMembers);
+}
+
+function renderFamilyMembers(members) {
+  const max = maxFamilyMembers();
+  document.getElementById('family-member-count').textContent = `${members.length} / ${max}名`;
+  const isAdmin = state.familyRole === 'admin';
+  const container = document.getElementById('family-members-list');
+  if (!members.length) {
+    container.innerHTML = '<div class="empty-state" style="padding:20px"><p>メンバーがいません</p></div>';
+    return;
+  }
+  container.innerHTML = members.map(m => {
+    const isMe = m.user_id === state.user.id;
+    const roleLabel = m.role === 'admin' ? '管理者' : 'メンバー';
+    const canRemove = isAdmin && !isMe && m.role !== 'admin';
+    return `<div class="family-member-item">
+      <div class="family-member-avatar">${m.role === 'admin' ? '👑' : '👤'}</div>
+      <div class="family-member-info">
+        <div class="family-member-email">${m.email}${isMe ? '（あなた）' : ''}</div>
+        <div class="family-member-role">${roleLabel}</div>
+      </div>
+      ${canRemove ? `<button class="family-remove-btn" onclick="removeFamilyMember('${m.id}')">削除</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function createFamilyGroup() {
+  const name = document.getElementById('family-group-name').value.trim() || 'わが家';
+  const { data: group, error: ge } = await sb
+    .from('family_groups')
+    .insert({ owner_id: state.user.id, name })
+    .select().single();
+  if (ge || !group) { showToast('⚠️ グループ作成に失敗しました', true); return; }
+
+  const { error: me } = await sb
+    .from('family_members')
+    .insert({ group_id: group.id, user_id: state.user.id, role: 'admin' });
+  if (me) { showToast('⚠️ グループへの参加に失敗しました', true); return; }
+
+  state.familyGroup = group;
+  state.familyRole = 'admin';
+  showFamilyGroupPanel(group);
+  await loadFamilyMembers(group.id);
+  showToast('✅ グループを作成しました');
+}
+
+async function saveFamilyGroupName() {
+  const name = document.getElementById('family-group-name-edit').value.trim();
+  if (!name || !state.familyGroup) return;
+  const { error } = await sb.from('family_groups').update({ name }).eq('id', state.familyGroup.id);
+  if (error) { showToast('⚠️ 保存に失敗しました', true); return; }
+  state.familyGroup.name = name;
+  showToast('✅ グループ名を保存しました');
+}
+
+async function generateInviteLink() {
+  if (!state.familyGroup) return;
+  if (state.familyMembers.length >= maxFamilyMembers()) {
+    showToast(`⚠️ メンバーが上限（${maxFamilyMembers()}名）に達しています`, true); return;
+  }
+  const token = crypto.randomUUID().replace(/-/g, '');
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const { error } = await sb
+    .from('family_invites')
+    .insert({ group_id: state.familyGroup.id, token, expires_at: expiresAt });
+  if (error) { showToast('⚠️ 招待リンクの発行に失敗しました', true); return; }
+
+  const url = `${location.origin}${location.pathname}?invite=${token}`;
+  document.getElementById('family-invite-url').textContent = url;
+  document.getElementById('family-invite-result').style.display = 'block';
+}
+
+function copyInviteLink() {
+  const url = document.getElementById('family-invite-url').textContent;
+  navigator.clipboard.writeText(url).then(() => showToast('✅ URLをコピーしました'));
+}
+
+async function removeFamilyMember(memberId) {
+  if (!confirm('このメンバーを削除しますか？')) return;
+  const { error } = await sb.from('family_members').delete().eq('id', memberId);
+  if (error) { showToast('⚠️ 削除に失敗しました', true); return; }
+  state.familyMembers = state.familyMembers.filter(m => m.id !== memberId);
+  renderFamilyMembers(state.familyMembers);
+  showToast('✅ メンバーを削除しました');
+}
+
+async function handleInviteToken(token) {
+  if (!state.user) {
+    localStorage.setItem('pendingInviteToken', token);
+    return;
+  }
+  // Validate invite
+  const { data: invite } = await sb
+    .from('family_invites')
+    .select('*, family_groups(id, name)')
+    .eq('token', token)
+    .eq('used', false)
+    .maybeSingle();
+
+  if (!invite) { alert('招待リンクが無効または期限切れです'); localStorage.removeItem('pendingInviteToken'); return; }
+  if (new Date(invite.expires_at) < new Date()) { alert('招待リンクの有効期限が切れています'); localStorage.removeItem('pendingInviteToken'); return; }
+
+  // Already in a group?
+  const { data: existing } = await sb
+    .from('family_members').select('id').eq('user_id', state.user.id).maybeSingle();
+  if (existing) { alert('すでに別のグループに参加しています'); localStorage.removeItem('pendingInviteToken'); return; }
+
+  const groupName = invite.family_groups?.name || 'グループ';
+  if (!confirm(`「${groupName}」に参加しますか？`)) return;
+
+  const { error: je } = await sb
+    .from('family_members')
+    .insert({ group_id: invite.group_id, user_id: state.user.id, role: 'member' });
+  if (je) { alert('グループへの参加に失敗しました'); return; }
+
+  await sb.from('family_invites').update({ used: true }).eq('token', token);
+
+  const url = new URL(window.location.href);
+  url.searchParams.delete('invite');
+  window.history.replaceState({}, '', url);
+  localStorage.removeItem('pendingInviteToken');
+
+  showToast(`✅「${groupName}」に参加しました`);
+  switchPage('family');
 }
 
 // Cost Simulator
