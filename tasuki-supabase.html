@@ -1609,12 +1609,20 @@ async function createFamilyGroup() {
     .from('family_groups')
     .insert({ owner_id: state.user.id, name })
     .select().single();
-  if (ge || !group) { showToast('⚠️ グループ作成に失敗しました', true); return; }
+  if (ge || !group) {
+    console.error('[createFamilyGroup] family_groups INSERT error:', ge?.message, ge?.code, ge?.details, ge?.hint);
+    showToast('⚠️ グループ作成に失敗しました: ' + (ge?.message || '不明なエラー'), true);
+    return;
+  }
 
   const { error: me } = await sb
     .from('family_members')
     .insert({ group_id: group.id, user_id: state.user.id, role: 'admin' });
-  if (me) { showToast('⚠️ グループへの参加に失敗しました', true); return; }
+  if (me) {
+    console.error('[createFamilyGroup] family_members INSERT error:', me?.message, me?.code, me?.details, me?.hint);
+    showToast('⚠️ グループへの参加に失敗しました: ' + (me?.message || '不明なエラー'), true);
+    return;
+  }
 
   state.familyGroup = group;
   state.familyRole = 'admin';
