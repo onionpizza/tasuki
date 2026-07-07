@@ -1113,7 +1113,15 @@ async function handleLogin() {
   btn.disabled = true; btn.textContent = 'ログイン中...';
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   btn.disabled = false; btn.textContent = '🐾 ログイン';
-  if (error) { showAuthMsg('ログインに失敗しました。メールアドレスとパスワードを確認してください。', 'error'); return; }
+  if (error) {
+    // メールアドレス未確認の場合
+    if (error.code === 'email_not_confirmed' || /email not confirmed|not confirmed/i.test(error.message || '')) {
+      showAuthMsg('メールアドレスの確認が完了していません。届いたメールをご確認ください。', 'error');
+      return;
+    }
+    showAuthMsg('ログインに失敗しました。メールアドレスとパスワードを確認してください。', 'error');
+    return;
+  }
   onLogin(data.user);
 }
 
@@ -1124,10 +1132,23 @@ async function handleSignup() {
   if (password.length < 6) { showAuthMsg('パスワードは6文字以上で入力してください', 'error'); return; }
   const btn = document.getElementById('signup-btn');
   btn.disabled = true; btn.textContent = '登録中...';
-  const { data, error } = await sb.auth.signUp({ email, password });
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password,
+    options: { emailRedirectTo: window.location.origin + window.location.pathname }
+  });
   btn.disabled = false; btn.textContent = '🐾 アカウントを作成する';
   if (error) { showAuthMsg('登録に失敗しました: ' + error.message, 'error'); return; }
-  showAuthMsg('✅ 登録完了！確認メールを送信しました。メールを確認してからログインしてください。', 'success');
+  // メール確認がONの場合、session は null（本登録はメール内リンクのクリック後）
+  if (data.session) {
+    // 確認メール無効設定の場合は即ログイン（既存挙動の保険）
+    onLogin(data.user);
+    return;
+  }
+  showAuthMsg('✅ 確認メールを送信しました。メールをご確認ください。<br>メール内のリンクをクリックすると登録が完了します。', 'success');
+  // フォームをクリア
+  document.getElementById('signup-email').value = '';
+  document.getElementById('signup-password').value = '';
 }
 
 async function handleLogout() {
