@@ -1,18 +1,31 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-
 const PRICES = {
   standard: process.env.STRIPE_PRICE_STANDARD,
   premium: process.env.STRIPE_PRICE_PREMIUM,
 };
 const APP_URL = process.env.APP_URL || 'https://tasuki-eta.vercel.app';
 
+function missingEnv() {
+  const required = ['STRIPE_SECRET_KEY', 'STRIPE_PRICE_STANDARD', 'STRIPE_PRICE_PREMIUM', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+  return required.filter((k) => !process.env[k]);
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
+
+  const missing = missingEnv();
+  if (missing.length) {
+    console.error('Missing env vars:', missing);
+    res.status(500).json({ error: 'Server misconfigured. Missing env: ' + missing.join(', ') });
+    return;
+  }
+
   try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
     const { plan, userId, email } = req.body || {};
     if (!userId || !email || !PRICES[plan]) {
       res.status(400).json({ error: 'Invalid parameters' });
