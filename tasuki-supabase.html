@@ -404,6 +404,20 @@
 
     .lock-banner { text-align: center; padding: 14px; color: var(--text-light); font-size: 12px; background: var(--accent); border-radius: 10px; }
     .lock-banner .lock-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+    /* プレミアム・プレビュー（ぼかし＋オーバーレイ） */
+    .pv-wrap { position: relative; }
+    .pv-clip { max-height: 520px; overflow: hidden; }
+    .pv-blur { filter: blur(4px); pointer-events: none; user-select: none; }
+    .pv-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 20px; background: linear-gradient(180deg, rgba(253,248,244,0.35) 0%, rgba(253,248,244,0.85) 45%, rgba(253,248,244,0.97) 100%); border-radius: 12px; }
+    .pv-overlay .pv-lock { font-size: 30px; }
+    .pv-overlay .pv-title { font-weight: 700; font-size: 15px; color: var(--text); }
+    .pv-overlay .pv-desc { font-size: 12px; color: var(--text-light); line-height: 1.6; max-width: 300px; }
+    .pv-overlay .pv-cta { margin-top: 6px; background: var(--primary); color: #fff; border: none; border-radius: 24px; padding: 12px 24px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(232,132,90,0.35); }
+    /* パスポートのダミー骨組み */
+    .pv-skel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+    .pv-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .pv-avatar { width: 54px; height: 54px; border-radius: 50%; background: var(--accent); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+    .pv-line { height: 11px; border-radius: 6px; background: var(--accent); margin-bottom: 9px; }
 
     .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--primary-dark); color: white; padding: 12px 24px; border-radius: 24px; font-size: 14px; font-weight: 700; z-index: 300; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; max-width: 90%; text-align: center; }
     .toast.toast-show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -625,7 +639,28 @@
       <div class="card-title">🆘 緊急パスポート <span class="plan-badge" id="passport-badge" style="display:none">PREMIUM</span></div>
       <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">迷子・災害・もしもの時にすぐ見せられるペットの緊急情報カードを作成できます</p>
       <button class="btn-primary" id="passport-btn" style="display:none" onclick="openPassportModal()">🆘 緊急パスポートを作成する</button>
-      <div class="lock-banner" id="passport-lock" style="display:none"><span class="lock-icon">🔒</span>プレミアムプランで利用可能</div>
+      <div class="pv-wrap" id="passport-preview" style="display:none">
+        <div class="pv-skel pv-blur">
+          <div class="pv-row">
+            <div class="pv-avatar">🐶</div>
+            <div style="flex:1">
+              <div class="pv-line" style="width:62%"></div>
+              <div class="pv-line" style="width:44%;margin-bottom:0"></div>
+            </div>
+          </div>
+          <div class="pv-line" style="width:88%"></div>
+          <div class="pv-line" style="width:72%"></div>
+          <div class="pv-line" style="width:80%"></div>
+          <div class="pv-line" style="width:56%"></div>
+          <div class="pv-line" style="width:68%;margin-bottom:0"></div>
+        </div>
+        <div class="pv-overlay">
+          <div class="pv-lock">🔒</div>
+          <div class="pv-title">プレミアム限定コンテンツ</div>
+          <div class="pv-desc">緊急パスポートはプレミアムプランでご利用いただけます</div>
+          <button class="pv-cta" onclick="goPremium()">プレミアムで全部見る</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -961,12 +996,8 @@
     <div class="page-title">📝 もしもノート <span class="plan-badge" id="moshimo-badge" style="display:none">PREMIUM</span></div>
     <div class="page-subtitle">万が一の時に備えて、ペットの引き継ぎ情報をまとめておきましょう</div>
 
-    <div class="lock-banner" id="moshimo-lock" style="display:none">
-      <span class="lock-icon">🔒</span>プレミアムプランで利用可能
-      <div style="margin-top:6px;font-size:11px">プレミアムプラン（月額1,480円）でご利用いただけます</div>
-    </div>
-
-    <div id="moshimo-content" style="display:none">
+    <div class="pv-wrap" id="moshimo-preview">
+    <div id="moshimo-content">
       <div class="note-section">
         <div class="note-section-title">👤 引き継ぎ先</div>
         <div class="form-group"><label class="form-label">氏名 *</label><input type="text" class="form-input" id="mn-recipient-name" placeholder="例：田中 花子"></div>
@@ -999,6 +1030,13 @@
       </div>
 
       <div style="height:80px"></div>
+    </div>
+      <div class="pv-overlay" id="moshimo-overlay" style="display:none">
+        <div class="pv-lock">🔒</div>
+        <div class="pv-title">プレミアム限定コンテンツ</div>
+        <div class="pv-desc">もしもノートはプレミアムプランでご利用いただけます</div>
+        <button class="pv-cta" onclick="goPremium()">プレミアムで全部見る</button>
+      </div>
     </div>
 
     <div id="moshimo-save-bar" style="display:none;position:fixed;bottom:64px;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:10px 16px;background:var(--white);border-top:1px solid var(--border);z-index:99">
@@ -1306,8 +1344,14 @@ function isPremium() { return state.userPlan === 'premium'; }
 function updatePassportUI() {
   const prem = isPremium();
   document.getElementById('passport-btn').style.display = prem ? 'block' : 'none';
-  document.getElementById('passport-lock').style.display = prem ? 'none' : 'block';
+  document.getElementById('passport-preview').style.display = prem ? 'none' : 'block';
   document.getElementById('passport-badge').style.display = prem ? 'none' : 'inline-block';
+}
+
+// プレビューのCTA → 既存のStripe決済へ
+function goPremium() {
+  if (typeof startCheckout === 'function') { startCheckout('premium'); }
+  else { switchPage('plan'); }
 }
 
 // Pet Profile
@@ -2028,8 +2072,13 @@ async function saveSimResult() {
 // Moshimo Note
 function updateMoshimoUI() {
   const prem = isPremium();
-  document.getElementById('moshimo-lock').style.display = prem ? 'none' : 'block';
-  document.getElementById('moshimo-content').style.display = prem ? 'block' : 'none';
+  const wrap = document.getElementById('moshimo-preview');
+  const content = document.getElementById('moshimo-content');
+  // レイアウトは常に表示し、無料ユーザーは本文をぼかす
+  content.style.display = 'block';
+  content.classList.toggle('pv-blur', !prem);
+  wrap.classList.toggle('pv-clip', !prem);
+  document.getElementById('moshimo-overlay').style.display = prem ? 'none' : 'flex';
   document.getElementById('moshimo-save-bar').style.display = prem ? 'block' : 'none';
   document.getElementById('moshimo-badge').style.display = prem ? 'none' : 'inline-block';
 }
